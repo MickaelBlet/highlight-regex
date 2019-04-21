@@ -19,7 +19,9 @@
                     "default": [
                         {
                             "block": "/\\*[^]*?\\*/|//.*",
+                            "blockFlags": "gm",
                             "regex": "\\bTODO\\b",
+                            "regexFlags": "gmi",
                             "index": 0,
                             "limit": 100,
                             "css": {

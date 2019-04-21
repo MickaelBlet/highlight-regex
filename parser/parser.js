@@ -5,7 +5,6 @@ class Parser {
         this.activeEditor;
         this.text;
         this.regex = [];
-        this.ranges = [];
         this.loadConfigurations(contributions);
     }
 
@@ -20,14 +19,17 @@ class Parser {
         // load regex configuration
         let rgx = contributions.regex;
         for (let i = 0; i < rgx.length; i++) {
+            let rgxRegexEx;
+            let rgxBlockEx;
             try {
                 if (rgx[i].block) {
-                    let regEx = new RegExp(rgx[i].block, "gm");
-                    regEx.test();
+
+                    rgxBlockEx = new RegExp(rgx[i].block, (rgx[i].blockFlags) ? rgx[i].blockFlags : "gm");
+                    rgxBlockEx.test();
                 }
                 if (rgx[i].regex) {
-                    let regEx = new RegExp(rgx[i].regex, "gm");
-                    regEx.test();
+                    rgxRegexEx = new RegExp(rgx[i].regex, (rgx[i].regexFlags) ? rgx[i].regexFlags : "gm");
+                    rgxRegexEx.test();
                 }
             }
             catch (error) {
@@ -35,8 +37,8 @@ class Parser {
                 continue ;
             }
             this.regex.push({
-                block: rgx[i].block,
-                regex: rgx[i].regex,
+                block: rgxBlockEx,
+                regex: rgxRegexEx,
                 index: (rgx[i].index && rgx[i].index >= 0) ? rgx[i].index : 0,
                 limit: (rgx[i].limit) ? rgx[i].limit : 1000,
                 decoration: vscode.window.createTextEditorDecorationType(rgx[i].css),
@@ -84,13 +86,12 @@ class Parser {
                 continue ;
             }
             let count = 0;
-            let regEx = new RegExp(this.regex[i].regex, "gm");
+            let regEx = this.regex[i].regex;
             // block
-            if (this.regex[i].block !== undefined && this.regex[i].block.length > 0) {
-                let regBlock = new RegExp(this.regex[i].block, "gm");
+            if (this.regex[i].block) {
                 let countBlock = 0;
                 let searchBlock;
-                while (searchBlock = regBlock.exec(this.text)) {
+                while (searchBlock = this.regex[i].block.exec(this.text)) {
                     if (++countBlock > 5000 || count > this.regex[i].limit) {
                         break ;
                     }
@@ -122,9 +123,8 @@ class Parser {
                 }
             }
             else {
-                let regEx = new RegExp(this.regex[i].regex, "gm");
                 let search;
-                while (search = regEx.exec(this.text)) {
+                while (search = this.regex[i].regex.exec(this.text)) {
                     if (++count > this.regex[i].limit) {
                         break ;
                     }
