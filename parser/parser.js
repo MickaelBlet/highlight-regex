@@ -17,33 +17,30 @@ class Parser {
         // reset regex
         this.regex.length = 0;
         // load regex configuration
-        let rgx = contributions.regex;
-        for (let i = 0; i < rgx.length; i++) {
+        for (let rgx of contributions.regex) {
             let rgxRegexEx;
             let rgxBlockEx;
             try {
-                if (rgx[i].block) {
-
-                    rgxBlockEx = new RegExp(rgx[i].block, (rgx[i].blockFlags) ? rgx[i].blockFlags : "gm");
-                    rgxBlockEx.test();
+                if (rgx.block) {
+                    rgxBlockEx = new RegExp(rgx.block, (rgx.blockFlags) ? rgx.blockFlags : "gm");
+                    rgxBlockEx.test(); // just for valid regex
                 }
-                if (rgx[i].regex) {
-                    rgxRegexEx = new RegExp(rgx[i].regex, (rgx[i].regexFlags) ? rgx[i].regexFlags : "gm");
-                    rgxRegexEx.test();
+                if (rgx.regex) {
+                    rgxRegexEx = new RegExp(rgx.regex, (rgx.regexFlags) ? rgx.regexFlags : "gm");
+                    rgxRegexEx.test(); // just for valid regex
                 }
+                this.regex.push({
+                    block: rgxBlockEx,
+                    regex: rgxRegexEx,
+                    index: (rgx.index && rgx.index >= 0) ? rgx.index : 0,
+                    limit: (rgx.limit) ? rgx.limit : 1000,
+                    decoration: vscode.window.createTextEditorDecorationType(rgx.css),
+                    ranges: []
+                });
             }
             catch (error) {
                 console.error(error);
-                continue ;
             }
-            this.regex.push({
-                block: rgxBlockEx,
-                regex: rgxRegexEx,
-                index: (rgx[i].index && rgx[i].index >= 0) ? rgx[i].index : 0,
-                limit: (rgx[i].limit) ? rgx[i].limit : 1000,
-                decoration: vscode.window.createTextEditorDecorationType(rgx[i].css),
-                ranges: []
-            });
         }
     }
 
@@ -51,11 +48,11 @@ class Parser {
         if (!activeEditor) {
             return ;
         }
-        for (let i = 0; i < this.regex.length; i++) {
+        for (let rgx of this.regex) {
             // reset range
-            this.regex[i].ranges.length = 0;
+            rgx.ranges.length = 0;
             // disable old decoration
-            activeEditor.setDecorations(this.regex[i].decoration, this.regex[i].ranges);
+            activeEditor.setDecorations(rgx.decoration, rgx.ranges);
         }
     }
 
@@ -67,11 +64,11 @@ class Parser {
         this.text = this.activeEditor.document.getText();
         // search all ranges
         this.searchRegex();
-        for (let i = 0; i < this.regex.length; i++) {
+        for (let rgx of this.regex) {
             // disable old decoration
-            this.activeEditor.setDecorations(this.regex[i].decoration, this.regex[i].ranges);
+            this.activeEditor.setDecorations(rgx.decoration, rgx.ranges);
             // reset range
-            this.regex[i].ranges.length = 0;
+            rgx.ranges.length = 0;
         }
     }
 
@@ -81,69 +78,68 @@ class Parser {
 
     // search all function in text document
     searchRegex() {
-        for (let i = 0; i < this.regex.length; i++) {
-            if (this.regex[i].regex === undefined) {
+        for (let rgx of this.regex) {
+            if (rgx.regex === undefined) {
                 continue ;
             }
             let count = 0;
-            let regEx = this.regex[i].regex;
             // block
-            if (this.regex[i].block) {
+            if (rgx.block) {
                 let countBlock = 0;
                 let searchBlock;
-                while (searchBlock = this.regex[i].block.exec(this.text)) {
-                    if (++countBlock > 5000 || count > this.regex[i].limit) {
+                while (searchBlock = rgx.block.exec(this.text)) {
+                    if (++countBlock > 5000 || count > rgx.limit) {
                         break ;
                     }
                     if (searchBlock[0].length == 0) {
                         continue ;
                     }
                     let searchRegex;
-                    while (searchRegex = regEx.exec(searchBlock[0])) {
-                        if (++count > this.regex[i].limit) {
+                    while (searchRegex = rgx.regex.exec(searchBlock[0])) {
+                        if (++count > rgx.limit) {
                             break ;
                         }
                         if (searchRegex[0].length == 0){
                             continue ;
                         }
-                        if (searchRegex.length <= this.regex[i].index) {
+                        if (searchRegex.length <= rgx.index) {
                             continue ;
                         }
                         let indexStart = 0;
-                        for (let j = 1; j < this.regex[i].index; j++) {
+                        for (let j = 1; j < rgx.index; j++) {
                             if (searchRegex[j]) {
                                 indexStart += searchRegex[j].length;
                             }
                         }
                         let startPos = this.activeEditor.document.positionAt(searchBlock.index + searchRegex.index + indexStart);
-                        let endPos = this.activeEditor.document.positionAt(searchBlock.index + searchRegex.index + indexStart + searchRegex[this.regex[i].index].length);
+                        let endPos = this.activeEditor.document.positionAt(searchBlock.index + searchRegex.index + indexStart + searchRegex[rgx.index].length);
                         let range = { range: new vscode.Range(startPos, endPos) };
-                        this.regex[i].ranges.push(range);
+                        rgx.ranges.push(range);
                     }
                 }
             }
             else {
                 let search;
-                while (search = this.regex[i].regex.exec(this.text)) {
-                    if (++count > this.regex[i].limit) {
+                while (search = rgx.regex.exec(this.text)) {
+                    if (++count > rgx.limit) {
                         break ;
                     }
                     if (search[0].length == 0) {
                         continue ;
                     }
-                    if (search.length <= this.regex[i].index) {
+                    if (search.length <= rgx.index) {
                         continue ;
                     }
                     let indexStart = 0;
-                    for (let j = 1; j < this.regex[i].index; j++) {
+                    for (let j = 1; j < rgx.index; j++) {
                         if (searchRegex[j]) {
                             indexStart += search[j].length;
                         }
                     }
                     let startPos = this.activeEditor.document.positionAt(search.index + indexStart);
-                    let endPos = this.activeEditor.document.positionAt(search.index + indexStart + search[this.regex[i].index].length);
+                    let endPos = this.activeEditor.document.positionAt(search.index + indexStart + search[rgx.index].length);
                     let range = { range: new vscode.Range(startPos, endPos) };
-                    this.regex[i].ranges.push(range);
+                    rgx.ranges.push(range);
                 }
             }
         }
