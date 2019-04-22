@@ -29,7 +29,9 @@
                                 "backgroundColor": "#FF9900",
                                 "border": "1px solid #000000; margin:0px -2px; padding:0px 16px;",
                                 "borderRadius":"7px",
-                                "fontWeight": "bold"
+                                "fontWeight": "bold",
+                                "overviewRulerColor": "#FF9900FF",
+                                "overviewRulerLane": 4
                             }
                         }
                     ]
