@@ -105,6 +105,9 @@ class Parser {
                         if (searchRegex.length <= rgx.index) {
                             continue ;
                         }
+                        if (searchRegex[rgx.index] == undefined) {
+                            continue ;
+                        }
                         let indexStart = 0;
                         for (let j = 1; j < rgx.index; j++) {
                             if (searchRegex[j]) {
@@ -130,9 +133,12 @@ class Parser {
                     if (search.length <= rgx.index) {
                         continue ;
                     }
+                    if (search[rgx.index] == undefined) {
+                        continue ;
+                    }
                     let indexStart = 0;
                     for (let j = 1; j < rgx.index; j++) {
-                        if (searchRegex[j]) {
+                        if (search[j]) {
                             indexStart += search[j].length;
                         }
                     }
