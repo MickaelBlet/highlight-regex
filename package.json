@@ -18,21 +18,32 @@
                     "description": "set search regex and css",
                     "default": [
                         {
+                            "language": "*",
                             "block": "/\\*[^]*?\\*/|//.*",
                             "blockFlags": "gm",
-                            "regex": "\\bTODO\\b",
+                            "regex": "\\b(TODO)\\b|\\b(TADA)\\b",
                             "regexFlags": "gmi",
-                            "index": 0,
                             "limit": 100,
-                            "css": {
+                            "css": [{
+                                "index": 1,
                                 "color": "#000000",
                                 "backgroundColor": "#FF9900",
-                                "border": "1px solid #000000; margin:0px -2px; padding:0px 16px;",
+                                "border": "1px solid #000000",
                                 "borderRadius":"7px",
                                 "fontWeight": "bold",
                                 "overviewRulerColor": "#FF9900FF",
                                 "overviewRulerLane": 4
-                            }
+                            },
+                            {
+                                "index": 2,
+                                "color": "#FFFFFF",
+                                "backgroundColor": "#FF0000",
+                                "border": "1px solid #000000",
+                                "borderRadius":"7px",
+                                "fontWeight": "bold",
+                                "overviewRulerColor": "#FF0000FF",
+                                "overviewRulerLane": 4
+                            }]
                         }
                     ]
                 },
