@@ -18,7 +18,7 @@
                     "description": "set search regex and css",
                     "default": [
                         {
-                            "language": "*",
+                            "language": "c|cpp",
                             "block": "/\\*[^]*?\\*/|//.*",
                             "blockFlags": "gm",
                             "regex": "\\b(TODO)\\b|\\b(TADA)\\b",
