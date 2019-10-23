@@ -1,5 +1,5 @@
 const vscode = require("vscode");
-const parser_1 = require("./parser/parser");
+const parser_1 = require("./src/parser");
 
 function activate(context) {
     let activeEditor;

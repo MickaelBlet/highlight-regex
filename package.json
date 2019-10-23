@@ -2,7 +2,7 @@
 	"name"       : "mblet-regex-hightlight",
 	"displayName": "mblet-regex-hightlight",
 	"description": "Add simply hightlight from regex",
-	"version"    : "1.0.0",
+	"version"    : "0.1.0",
 	"publisher"  : "mblet",
     "engines"    : { "vscode": "^1.25.0" },
     "main"       : "./extension.js",
@@ -18,18 +18,18 @@
                     "description": "set search regex and css",
                     "default": [
                         {
-                            "language": "c|cpp",
-                            "block": "/\\*[^]*?\\*/|//.*",
+                            "language": "c|cpp|java",
+                            "block": "/\\*[^]*?\\*/|//[^]*?(?:(?<!\\\\)$)",
                             "blockFlags": "gm",
                             "regex": "\\b(TODO)\\b|\\b(TADA)\\b",
                             "regexFlags": "gmi",
                             "limit": 100,
                             "css": [{
                                 "index": 1,
-                                "color": "#000000",
-                                "backgroundColor": "#FF9900",
-                                "border": "1px solid #000000",
-                                "borderRadius":"7px",
+                                "color": "#FFFFFF",
+                                "backgroundColor": "#FF990090",
+                                "border": "1px solid #FF990050",
+                                "borderRadius": "4px",
                                 "fontWeight": "bold",
                                 "overviewRulerColor": "#FF9900FF",
                                 "overviewRulerLane": 4
@@ -37,9 +37,9 @@
                             {
                                 "index": 2,
                                 "color": "#FFFFFF",
-                                "backgroundColor": "#FF0000",
-                                "border": "1px solid #000000",
-                                "borderRadius":"7px",
+                                "backgroundColor": "#FF000090",
+                                "border": "1px solid #FF000050",
+                                "borderRadius": "4px",
                                 "fontWeight": "bold",
                                 "overviewRulerColor": "#FF0000FF",
                                 "overviewRulerLane": 4
