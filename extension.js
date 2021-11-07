@@ -1,24 +1,51 @@
+/*
+MIT License
+
+Copyright (c) 2021 Mickaël Blet
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 const vscode = require("vscode");
-const parser_1 = require("./src/parser");
+const parser = require("./src/parser");
+
+const nameOfProperties = "highlight-regex";
 
 function activate(context) {
     let activeEditor;
-    let contributions = vscode.workspace.getConfiguration('mblet-regex-hightlight');
-    let parser = new parser_1.Parser(contributions);
+    let logger = vscode.window.createOutputChannel("Highlight regex");
+    let contributions = vscode.workspace.getConfiguration(nameOfProperties);
+    let parserObj = new parser.Parser(logger, contributions);
 
     // function call by triggerUpdateDecorations
     let updateDecorations = function (useHash = false) {
         if (!activeEditor) {
             return ;
         }
-        parser.updateDecorations(activeEditor);
+        parserObj.updateDecorations(activeEditor);
     };
 
     // first launch
     if (vscode.window.visibleTextEditors.length > 0) {
         let textEditors = vscode.window.visibleTextEditors;
         for (let i = 0 ; i < textEditors.length ; i++) {
-            parser.updateDecorations(textEditors[i]);
+            parserObj.updateDecorations(textEditors[i]);
         }
     }
 
@@ -29,14 +56,14 @@ function activate(context) {
 
     // event configuration change
     vscode.workspace.onDidChangeConfiguration(event => {
-        contributions = vscode.workspace.getConfiguration('mblet-regex-hightlight');
+        contributions = vscode.workspace.getConfiguration(nameOfProperties);
         let textEditors = vscode.window.visibleTextEditors;
         for (let i = 0 ; i < textEditors.length ; i++) {
-            parser.resetDecorations(textEditors[i]);
+            parserObj.resetDecorations(textEditors[i]);
         }
-        parser.loadConfigurations(contributions);
+        parserObj.loadConfigurations(contributions);
         for (let i = 0 ; i < textEditors.length ; i++) {
-            parser.updateDecorations(textEditors[i]);
+            parserObj.updateDecorations(textEditors[i]);
         }
     });
 
@@ -52,7 +79,7 @@ function activate(context) {
     vscode.window.onDidChangeVisibleTextEditors(editors => {
         let textEditors = editors;
         for (let i = 0 ; i < textEditors.length ; i++) {
-            parser.updateDecorations(textEditors[i]);
+            parserObj.updateDecorations(textEditors[i]);
         }
     });
 
@@ -76,6 +103,6 @@ function activate(context) {
 function desactivate() {}
 
 module.exports = {
-	activate,
-	desactivate
+    activate,
+    desactivate
 }

@@ -1,19 +1,25 @@
 {
-	"name"       : "mblet-regex-hightlight",
-	"displayName": "mblet-regex-hightlight",
-	"description": "Add simply hightlight from regex",
-	"version"    : "0.1.0",
-	"publisher"  : "mblet",
-    "engines"    : { "vscode": "^1.25.0" },
-    "main"       : "./extension.js",
+    "name": "regex-hightlight",
+    "displayName": "Highlight regex",
+    "description": "Highlight with regex",
+    "version": "0.1.0",
+    "publisher": "mblet",
+    "engines": {
+        "vscode": "^1.0.0"
+    },
+    "main": "./extension.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/MickaelBlet/highlight-regex.git"
+    },
     "activationEvents": [
         "*"
     ],
     "contributes": {
-        "configuration":{
-            "title": "mblet regex hightlight configuration",
+        "configuration": {
+            "title": "Highlight regex",
             "properties": {
-                "mblet-regex-hightlight.regex": {
+                "highlight-regex.regexs": {
                     "type": "array",
                     "description": "set search regex and css",
                     "default": [
@@ -23,40 +29,42 @@
                             "blockFlags": "gm",
                             "regex": "\\b(TODO)\\b|\\b(TADA)\\b",
                             "regexFlags": "gmi",
-                            "limit": 100,
-                            "css": [{
-                                "index": 1,
-                                "color": "#FFFFFF",
-                                "backgroundColor": "#FF990090",
-                                "border": "1px solid #FF990050",
-                                "borderRadius": "4px",
-                                "fontWeight": "bold",
-                                "overviewRulerColor": "#FF9900FF",
-                                "overviewRulerLane": 4
-                            },
-                            {
-                                "index": 2,
-                                "color": "#FFFFFF",
-                                "backgroundColor": "#FF000090",
-                                "border": "1px solid #FF000050",
-                                "borderRadius": "4px",
-                                "fontWeight": "bold",
-                                "overviewRulerColor": "#FF0000FF",
-                                "overviewRulerLane": 4
-                            }]
+                            "limit": 200,
+                            "css": [
+                                {
+                                    "index": 1,
+                                    "color": "#FFFFFF",
+                                    "backgroundColor": "#FF990090",
+                                    "border": "1px solid #FF990050",
+                                    "borderRadius": "4px",
+                                    "fontWeight": "bold",
+                                    "overviewRulerColor": "#FF9900FF",
+                                    "overviewRulerLane": 4
+                                },
+                                {
+                                    "index": 2,
+                                    "color": "#FFFFFF",
+                                    "backgroundColor": "#FF000090",
+                                    "border": "1px solid #FF000050",
+                                    "borderRadius": "4px",
+                                    "fontWeight": "bold",
+                                    "overviewRulerColor": "#FF0000FF",
+                                    "overviewRulerLane": 4
+                                }
+                            ]
                         }
                     ]
                 },
-                "mblet-regex-hightlight.setTimeout": {
+                "highlight-regex.timeout": {
                     "type": "integer",
-                    "description": "set timeout after applicate decorations",
+                    "description": "Set timeout after applicate decorations",
                     "default": 200
                 }
             }
         }
     },
     "devDependencies": {
-        "vscode": "^1.1.22"
+        "vscode": "^1.0.0"
     },
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install"

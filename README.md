@@ -1,7 +1,7 @@
 # MBLET REGEX HIGHLIGHT
 
 <p align="center">
-  <img src="https://github.com/MickaelBlet/regex-highlight/blob/master/example.png" >
+  <img src="images/example.png" >
 </p>
 
 ```json
@@ -28,5 +28,5 @@
 ```
 
 <p align="center">
-  <img src="./example2.png" >
+  <img src="images/example2.png" >
 </p>
