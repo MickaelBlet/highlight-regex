@@ -1,5 +1,5 @@
 {
-    "name": "regex-hightlight",
+    "name": "highlight-regex",
     "displayName": "Highlight regex",
     "description": "Highlight with regex",
     "version": "0.1.0",
@@ -21,16 +21,17 @@
             "properties": {
                 "highlight-regex.regexs": {
                     "type": "array",
-                    "description": "set search regex and css",
+                    "markdownDescription": "Set search regex with decoration\n\nexample:\n\n```{```\n\n```\"language\": \"c|cpp|java\",```\n\n```\"block\": \"/\\*[^]*?\\*/|//[^]*?(?:(?<!\\\\)$)\",```\n\n```\"blockFlag\": \"gm\",```\n\n```\"blockLimit\": 25000,```\n\n```\"regex\": \"\\b(TODO)\\b|\\b(TADA)\\b\",```\n\n```\"regexFlag\": \"gmi\",```\n\n```\"regexLimit\": 25000,```\n\n```\"decorations\": [```\n\n```{```\n\n```\"index\": n,```\n\nSee the [API docs](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)```\n\n```}```\n\n```]```\n\n```}```",
                     "default": [
                         {
                             "language": "c|cpp|java",
                             "block": "/\\*[^]*?\\*/|//[^]*?(?:(?<!\\\\)$)",
-                            "blockFlags": "gm",
+                            "blockFlag": "gm",
+                            "blockLimit": 25000,
                             "regex": "\\b(TODO)\\b|\\b(TADA)\\b",
-                            "regexFlags": "gmi",
-                            "limit": 200,
-                            "css": [
+                            "regexFlag": "gmi",
+                            "regexLimit": 25000,
+                            "decorations": [
                                 {
                                     "index": 1,
                                     "color": "#FFFFFF",

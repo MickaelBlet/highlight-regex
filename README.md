@@ -1,17 +1,19 @@
-# MBLET REGEX HIGHLIGHT
+# Highlight regex
 
+### Example 1
 <p align="center">
-  <img src="images/example.png" >
+  <img src="images/example1.jpg" >
 </p>
 
-```json
-"mblet-regex-hightlight.regex": [
+### Example 2
+```jsonc
+"highlight-regex.regexs": [
     {
-        "language": "c|cpp",
-        "regex": "(?:['][^]*?(?:(?<!(?<!\\\\)\\\\)['])|[\"][^]*?(?:(?<!\\\\)[\"])|\\/\\*[^]*?\\*\\/|//[^]*?(?:(?<!\\\\)$)|#[^]*?(?:(?<!\\\\)$))|(\\b(?!__)_\\w+\\b)|(\\bthis\\b)",
-        "regexFlags": "gm",
-        "limit": 10000,
-        "css": [
+        "language": "c|cpp", // choose multi language
+        "regex": "(?:['][^]*?(?:(?<!(?<!\\\\)\\\\)['])|[\"][^]*?(?:(?<!\\\\)[\"])|\\/\\*[^]*?\\*\\/|//[^]*?(?:(?<!\\\\)$)|#[^]*?(?:(?<!\\\\)$))|(\\b(?!__)_\\w+\\b)|(\\bthis\\b)", // regex string
+        "regexFlag": "gm", // regex flag
+        "regexLimit": 10000,
+        "decorations": [
             {
                 "index": 1,
                 "fontWeight": "bold; text-shadow: 0px 0px 10px",
@@ -28,5 +30,5 @@
 ```
 
 <p align="center">
-  <img src="images/example2.png" >
+  <img src="images/example2.jpg" >
 </p>

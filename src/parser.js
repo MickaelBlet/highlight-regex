@@ -49,20 +49,20 @@ class Parser {
             let rgxBlockEx;
             try {
                 if (rgx.block) {
-                    rgxBlockEx = new RegExp(rgx.block, (rgx.blockFlags) ? rgx.blockFlags : "gm");
+                    rgxBlockEx = new RegExp(rgx.block, (rgx.blockFlag) ? rgx.blockFlag : "gm");
                     rgxBlockEx.test(); // just for valid regex
                 }
                 if (rgx.regex) {
-                    rgxRegexEx = new RegExp(rgx.regex, (rgx.regexFlags) ? rgx.regexFlags : "gm");
+                    rgxRegexEx = new RegExp(rgx.regex, (rgx.regexFlag) ? rgx.regexFlag : "gm");
                     rgxRegexEx.test(); // just for valid regex
                 }
                 let decorations = [];
-                for (let css of rgx.css) {
-                    let index = (css.index) ? css.index : 0;
-                    delete css.index;
+                for (let decoration of rgx.decorations) {
+                    let index = (decoration.index) ? decoration.index : 0;
+                    delete decoration.index;
                     decorations.push({
                         index: index,
-                        decoration: vscode.window.createTextEditorDecorationType(css),
+                        decoration: vscode.window.createTextEditorDecorationType(decoration),
                         ranges: []
                     });
                 }
@@ -70,7 +70,7 @@ class Parser {
                     language: (rgx.language) ? rgx.language : "*",
                     block: rgxBlockEx,
                     regex: rgxRegexEx,
-                    limit: (rgx.limit) ? rgx.limit : 50000,
+                    regexLimit: (rgx.regexLimit) ? rgx.regexLimit : 50000,
                     blockLimit: (rgx.blockLimit) ? rgx.blockLimit : 50000,
                     decorations: decorations
                 });
@@ -153,21 +153,21 @@ class Parser {
             if (rgx.regex === undefined) {
                 continue ;
             }
-            let count = 0;
             // block
             if (rgx.block) {
                 let countBlock = 0;
                 let searchBlock;
                 while (searchBlock = rgx.block.exec(this.text)) {
-                    if (++countBlock > rgx.blockLimit || count > rgx.limit) {
+                    if (++countBlock > rgx.blockLimit) {
                         break ;
                     }
                     if (searchBlock[0].length == 0) {
                         continue ;
                     }
+                    let count = 0;
                     let searchRegex;
                     while (searchRegex = rgx.regex.exec(searchBlock[0])) {
-                        if (++count > rgx.limit) {
+                        if (++count > rgx.regexLimit) {
                             break ;
                         }
                         if (searchRegex[0].length == 0){
@@ -197,9 +197,10 @@ class Parser {
                 }
             }
             else {
+                let count = 0;
                 let searchRegex;
                 while (searchRegex = rgx.regex.exec(this.text)) {
-                    if (++count > rgx.limit) {
+                    if (++count > rgx.regexLimit) {
                         break ;
                     }
                     if (searchRegex[0].length == 0){
