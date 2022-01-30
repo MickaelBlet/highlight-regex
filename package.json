@@ -1,11 +1,11 @@
 {
     "name": "highlight-regex",
-    "displayName": "Highlight regex",
+    "displayName": "Highlight - Regex",
     "description": "Highlight with regex",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "publisher": "mblet",
     "engines": {
-        "vscode": "^1.0.0"
+        "vscode": "^0.0.0"
     },
     "main": "./extension.js",
     "repository": {
@@ -16,12 +16,17 @@
         "*"
     ],
     "contributes": {
+        "commands": [
+            {
+                "command": "highlight.regex.showReadme",
+                "title": "Show readme of highlight regex"
+            }
+        ],
         "configuration": {
-            "title": "Highlight regex",
             "properties": {
-                "highlight-regex.regexs": {
+                "highlight.regex.regexs": {
                     "type": "array",
-                    "markdownDescription": "Set search regex with decoration\n\nexample:\n\n```{```\n\n```\"language\": \"c|cpp|java\",```\n\n```\"block\": \"/\\*[^]*?\\*/|//[^]*?(?:(?<!\\\\)$)\",```\n\n```\"blockFlag\": \"gm\",```\n\n```\"blockLimit\": 25000,```\n\n```\"regex\": \"\\b(TODO)\\b|\\b(TADA)\\b\",```\n\n```\"regexFlag\": \"gmi\",```\n\n```\"regexLimit\": 25000,```\n\n```\"decorations\": [```\n\n```{```\n\n```\"index\": n,```\n\nSee the [API docs](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)```\n\n```}```\n\n```]```\n\n```}```",
+                    "markdownDescription": "Set search regex with decoration\n\nExample at [README.md](command:highlight.regex.showReadme)\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
                     "default": [
                         {
                             "language": "c|cpp|java",
@@ -56,18 +61,32 @@
                         }
                     ]
                 },
-                "highlight-regex.timeout": {
+                "highlight.regex.defaultBlockLimit": {
+                    "type": "integer",
+                    "description": "Set default limit of search block",
+                    "default": 50000
+                },
+                "highlight.regex.defaultBlockFlag": {
+                    "type": "string",
+                    "description": "Set default flag of block",
+                    "default": "gm"
+                },
+                "highlight.regex.defaultRegexLimit": {
+                    "type": "integer",
+                    "description": "Set default limit of search regex",
+                    "default": 50000
+                },
+                "highlight.regex.defaultRegexFlag": {
+                    "type": "string",
+                    "description": "Set default flag of block",
+                    "default": "gm"
+                },
+                "highlight.regex.timeout": {
                     "type": "integer",
                     "description": "Set timeout after applicate decorations",
                     "default": 200
                 }
             }
         }
-    },
-    "devDependencies": {
-        "vscode": "^1.0.0"
-    },
-    "scripts": {
-        "postinstall": "node ./node_modules/vscode/bin/install"
     }
 }

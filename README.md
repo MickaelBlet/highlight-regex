@@ -1,6 +1,41 @@
 # Highlight regex
 
 ### Example 1
+```jsonc
+"highlight.regex.regexs": [
+    {
+        "language": "c|cpp|java",
+        "block": "/\\*[^]*?\\*/|//[^]*?(?:(?<!\\\\)$)",
+        "blockFlag": "gm",
+        "blockLimit": 25000,
+        "regex": "\\b(TODO)\\b|\\b(TADA)\\b",
+        "regexFlag": "gmi",
+        "regexLimit": 25000,
+        "decorations": [
+            {
+                "index": 1,
+                "color": "#FFFFFF",
+                "backgroundColor": "#FF990090",
+                "border": "1px solid #FF990050",
+                "borderRadius": "4px",
+                "fontWeight": "bold",
+                "overviewRulerColor": "#FF9900FF",
+                "overviewRulerLane": 4
+            },
+            {
+                "index": 2,
+                "color": "#FFFFFF",
+                "backgroundColor": "#FF000090",
+                "border": "1px solid #FF000050",
+                "borderRadius": "4px",
+                "fontWeight": "bold",
+                "overviewRulerColor": "#FF0000FF",
+                "overviewRulerLane": 4
+            }
+        ]
+    }
+]
+```
 <p align="center">
   <img src="images/example1.jpg" >
 </p>
