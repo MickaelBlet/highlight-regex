@@ -24,6 +24,7 @@ SOFTWARE.
 
 const vscode = require("vscode");
 const path = require("path");
+const { throws } = require("assert");
 
 class Parser {
 
@@ -45,12 +46,30 @@ class Parser {
         this.regexs.length = 0;
         // load regex configuration
         for (let rgx of configuration.regexs) {
-            let rgxRegexEx;
-            let rgxBlockEx;
             try {
-                if (rgx.block) {
-                    rgxBlockEx = new RegExp(rgx.block, (rgx.blockFlag) ? rgx.blockFlag : configuration.defaultBlockFlag);
-                    rgxBlockEx.test(); // just for valid regex
+                let rgxRegexEx;
+                let rgxBlocks = [];
+                if (rgx.blocks) {
+                    for (let block of rgx.blocks) {
+                        if (block.regex) {
+                            try {
+                                let rgxBlockEx;
+                                rgxBlockEx = new RegExp(block.regex, (block.regexFlag) ? rgx.regexFlag : configuration.defaultBlockFlag);
+                                rgxBlockEx.test(); // just for valid regex
+                                this.log(block.regex);
+                                this.log(block.regexFlag);
+                                this.log(block.regexLimit);
+                                rgxBlocks.push({
+                                    regex: rgxBlockEx,
+                                    regexLimit: (block.regexLimit) ? block.regexLimit : configuration.defaultBlockLimit
+                                });
+                            }
+                            catch (error) {
+                                console.error(error);
+                                this.log(error);
+                            }
+                        }
+                    }
                 }
                 if (rgx.regex) {
                     rgxRegexEx = new RegExp(rgx.regex, (rgx.regexFlag) ? rgx.regexFlag : configuration.defaultRegexFlag);
@@ -68,9 +87,8 @@ class Parser {
                 }
                 this.regexs.push({
                     language: (rgx.language) ? rgx.language : "*",
-                    block: rgxBlockEx,
+                    blocks: rgxBlocks,
                     regex: rgxRegexEx,
-                    blockLimit: (rgx.blockLimit) ? rgx.blockLimit : configuration.defaultBlockLimit,
                     regexLimit: (rgx.regexLimit) ? rgx.regexLimit : configuration.defaultRegexLimit,
                     decorations: decorations
                 });
@@ -133,8 +151,8 @@ class Parser {
             if (rgx.regex === undefined) {
                 continue;
             }
-            if (rgx.block) {
-                this.searchBlock(rgx, this.text);
+            if (rgx.blocks.length > 0) {
+                this.searchBlocks(rgx, this.text);
             }
             else {
                 this.searchRegex(rgx, this.text, 0);
@@ -156,18 +174,23 @@ class Parser {
     //
     // PRIVATE
     //
-
-    searchBlock(rgx, text) {
+    searchBlocks(rgx, text, searchIndex=0, index=0) {
         let count = 0;
         let search;
-        while (search = rgx.block.exec(text)) {
-            if (++count > rgx.blockLimit) {
+
+        while (search = rgx.blocks[index].regex.exec(text)) {
+            if (++count > rgx.blocks[index].regexLimit) {
                 break;
             }
             if (search[0].length == 0) {
                 continue;
             }
-            this.searchRegex(rgx, search[0], search.index);
+            if (index + 1 < rgx.blocks.length) {
+                this.searchBlocks(rgx, search[0], searchIndex + search.index, index + 1);
+            }
+            else {
+                this.searchRegex(rgx, search[0], searchIndex + search.index);
+            }
         }
     }
 

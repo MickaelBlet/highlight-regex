@@ -5,9 +5,13 @@
 "highlight.regex.regexs": [
     {
         "language": "c|cpp|java",
-        "block": "/\\*[^]*?\\*/|//[^]*?(?:(?<!\\\\)$)",
-        "blockFlag": "gm",
-        "blockLimit": 25000,
+        "blocks": [
+            {
+                "regex": "/\\*[^]*?\\*/|//[^]*?(?:(?<!\\\\)$)",
+                "regexFlag": "gm",
+                "regexLimit": 25000
+            }
+        ],
         "regex": "\\b(TODO)\\b|\\b(TADA)\\b",
         "regexFlag": "gmi",
         "regexLimit": 25000,
