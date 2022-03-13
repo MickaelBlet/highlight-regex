@@ -24,16 +24,16 @@ SOFTWARE.
 
 const vscode = require("vscode");
 const path = require("path");
-const { throws } = require("assert");
 
 class Parser {
 
     constructor(logger, configuration) {
-        this.activeEditor;
         this.logger = logger;
-        this.text;
-        this.regexs = [];
+        this.regexes = [];
+        this.decorations = [];
         this.loadConfigurations(configuration);
+        this.worker = new Worker(path.resolve(__dirname, 'worker.js'));
+        this.workerAtMessage();
     }
 
     //
@@ -42,55 +42,55 @@ class Parser {
 
     // load configuration from contributions
     loadConfigurations(configuration) {
-        // reset regex
-        this.regexs.length = 0;
-        // load regex configuration
-        for (let rgx of configuration.regexs) {
-            try {
-                let rgxRegexEx;
-                let rgxBlocks = [];
-                if (rgx.blocks) {
-                    for (let block of rgx.blocks) {
-                        if (block.regex) {
-                            try {
-                                let rgxBlockEx;
-                                rgxBlockEx = new RegExp(block.regex, (block.regexFlag) ? rgx.regexFlag : configuration.defaultBlockFlag);
-                                rgxBlockEx.test(); // just for valid regex
-                                this.log(block.regex);
-                                this.log(block.regexFlag);
-                                this.log(block.regexLimit);
-                                rgxBlocks.push({
-                                    regex: rgxBlockEx,
-                                    regexLimit: (block.regexLimit) ? block.regexLimit : configuration.defaultBlockLimit
-                                });
-                            }
-                            catch (error) {
-                                console.error(error);
-                                this.log(error);
-                            }
-                        }
-                    }
-                }
-                if (rgx.regex) {
-                    rgxRegexEx = new RegExp(rgx.regex, (rgx.regexFlag) ? rgx.regexFlag : configuration.defaultRegexFlag);
-                    rgxRegexEx.test(); // just for valid regex
-                }
-                let decorations = [];
-                for (let decoration of rgx.decorations) {
+        let loadRegexes = (configuration, regex) => {
+            let regexRegExp = new RegExp(regex.regex, (regex.regexFlag) ? regex.regexFlag : configuration.defaultRegexFlag);
+            regexRegExp.test();
+            let decorationList = [];
+            if (regex.decorations && regex.decorations.length > 0) {
+                for (let decoration of regex.decorations) {
                     let index = (decoration.index) ? decoration.index : 0;
                     delete decoration.index;
-                    decorations.push({
+                    decorationList.push({
                         index: index,
-                        decoration: vscode.window.createTextEditorDecorationType(decoration),
+                        decoration: this.decorations.length,
                         ranges: []
                     });
+                    this.decorations.push(vscode.window.createTextEditorDecorationType(decoration));
                 }
-                this.regexs.push({
-                    language: (rgx.language) ? rgx.language : "*",
-                    blocks: rgxBlocks,
-                    regex: rgxRegexEx,
-                    regexLimit: (rgx.regexLimit) ? rgx.regexLimit : configuration.defaultRegexLimit,
-                    decorations: decorations
+            }
+            let regexList = [];
+            if (regex.regexes && regex.regexes.length > 0) {
+                for (let regexes of regex.regexes) {
+                    regexList.push(loadRegexes(configuration, regexes));
+                }
+            }
+            return {
+                index: (regex.index) ? regex.index : 0,
+                regexRegExp: regexRegExp,
+                regexCount: 0,
+                regexLimit: (regex.regexLimit) ? regex.regexLimit : configuration.defaultRegexLimit,
+                regexes: regexList,
+                decorations: decorationList
+            };
+        }
+        // reset regex
+        this.regexes.length = 0;
+        this.decorations.length = 0;
+        // load regexes configuration
+        for (let regexList of configuration.regexes) {
+            // compile regex
+            try {
+                // stock languages
+                let languages = (regexList.languages) ? regexList.languages : undefined;
+                let regexes = [];
+                if (regexList.regexes && regexList.regexes.length > 0) {
+                    for (let regex of regexList.regexes) {
+                        regexes.push(loadRegexes(configuration, regex));
+                    }
+                }
+                this.regexes.push({
+                    languages: languages,
+                    regexes: regexes
                 });
             }
             catch (error) {
@@ -117,114 +117,158 @@ class Parser {
         if (!activeEditor) {
             return;
         }
-        for (let rgx of this.regexs) {
-            for (let decoration of rgx.decorations) {
-                // reset range
-                decoration.ranges.length = 0;
-                // disable old decoration
-                activeEditor.setDecorations(decoration.decoration, decoration.ranges);
-            }
-        }
-    }
-
-    updateDecorations(activeEditor) {
-        if (!activeEditor) {
-            return;
-        }
         if (activeEditor.document.uri.scheme == "output") {
             return;
         }
-        let startTime = Date.now();
-        this.activeEditor = activeEditor;
-        this.text = this.activeEditor.document.getText();
-        let countRange = 0;
-        // search all ranges
-        for (let rgx of this.regexs) {
-            if (rgx.language != "*") {
-                // check if language match
-                let searchLanguage = "(?:^|[|])(" + this.activeEditor.document.languageId + ")(?:$|[|])";
-                let rgxLanguage = new RegExp(searchLanguage, "gmi");
-                if (!rgxLanguage.test(rgx.language)) {
+        let recurseResetDecorations = (regex) => {
+            if (regex === undefined) {
+                return;
+            }
+            if (regex.decorations && regex.decorations.length > 0) {
+                for (let decoration of regex.decorations) {
+                    // reset range
+                    decoration.ranges.length = 0;
+                    // disable old decoration
+                    activeEditor.setDecorations(this.decorations[decoration.decoration], []);
+                }
+            }
+            if (regex.regexes && regex.regexes.length > 0) {
+                for (let insideRegexes of regex.regexes) {
+                    recurseResetDecorations(insideRegexes);
+                }
+            }
+        }
+        try {
+            for (let regexes of this.regexes) {
+                for (let regex of regexes.regexes) {
+                    recurseResetDecorations(regex);
+                }
+            }
+        }
+        catch (error) {
+            console.error(error);
+            this.log(error);
+        }
+    }
+
+    updateDecorations(editor) {
+        if (!editor) {
+            return;
+        }
+        if (editor.document.uri.scheme == "output") {
+            return;
+        }
+        var recurseSearchDecorations = function (regex, text, index = 0) {
+            let search;
+            regex.regexCount = 0;
+            while (search = regex.regexRegExp.exec(text)) {
+                regex.regexCount += 1;
+                if (regex.regexCount > regex.regexLimit) {
                     continue;
                 }
-            }
-            if (rgx.regex === undefined) {
-                continue;
-            }
-            if (rgx.blocks.length > 0) {
-                this.searchBlocks(rgx, this.text);
-            }
-            else {
-                this.searchRegex(rgx, this.text, 0);
-            }
-        }
-        for (let rgx of this.regexs) {
-            for (let decoration of rgx.decorations) {
-                // update decoration
-                activeEditor.setDecorations(decoration.decoration, decoration.ranges);
-                countRange = countRange + decoration.ranges.length;
-                // reset range
-                decoration.ranges.length = 0;
-            }
-        }
-        // log time
-        this.log("Update decorations at \"" + path.basename(activeEditor.document.fileName) + "\" in " + (Date.now() - startTime) + "ms with " + (countRange) + " occurence(s)")
-    }
-
-    //
-    // PRIVATE
-    //
-    searchBlocks(rgx, text, searchIndex=0, index=0) {
-        let count = 0;
-        let search;
-
-        while (search = rgx.blocks[index].regex.exec(text)) {
-            if (++count > rgx.blocks[index].regexLimit) {
-                break;
-            }
-            if (search[0].length == 0) {
-                continue;
-            }
-            if (index + 1 < rgx.blocks.length) {
-                this.searchBlocks(rgx, search[0], searchIndex + search.index, index + 1);
-            }
-            else {
-                this.searchRegex(rgx, search[0], searchIndex + search.index);
-            }
-        }
-    }
-
-    // search all function in text document
-    searchRegex(rgx, text, index) {
-        let count = 0;
-        let search;
-        while (search = rgx.regex.exec(text)) {
-            if (++count > rgx.regexLimit) {
-                break;
-            }
-            if (search[0].length == 0) {
-                continue;
-            }
-            let indexCount = search.index;
-            let indexStart = [];
-            let indexEnd = [];
-            indexStart.push(search.index);
-            indexEnd.push(search.index + search[0].length);
-            for (let j = 1; j < search.length; j++) {
-                indexStart.push(indexCount);
-                if (search[j]) {
-                    indexCount += search[j].length;
+                if (search[0].length == 0) {
+                    continue;
                 }
-                indexEnd.push(indexCount);
-            }
-            for (let decoration of rgx.decorations) {
-                if (search[decoration.index] && indexStart[decoration.index] != indexEnd[decoration.index]) {
-                    let startPos = this.activeEditor.document.positionAt(index + indexStart[decoration.index]);
-                    let endPos = this.activeEditor.document.positionAt(index + indexEnd[decoration.index]);
-                    let range = { range: new vscode.Range(startPos, endPos) };
-                    decoration.ranges.push(range);
+                let indexCount = search.index;
+                let indexStart = [];
+                let indexEnd = [];
+                indexStart.push(search.index);
+                indexEnd.push(search.index + search[0].length);
+                for (let j = 1; j < search.length; j++) {
+                    indexStart.push(indexCount);
+                    if (search[j]) {
+                        indexCount += search[j].length;
+                    }
+                    indexEnd.push(indexCount);
+                }
+                if (regex.decorations && regex.decorations.length > 0) {
+                    for (let decoration of regex.decorations) {
+                        if (decoration.decoration === undefined) {
+                            continue;
+                        }
+                        if (decoration.index < search.length && indexStart[decoration.index] != indexEnd[decoration.index]) {
+                            decoration.ranges.push({
+                                start: index + indexStart[decoration.index],
+                                end: index + indexEnd[decoration.index]
+                            });
+                        }
+                    }
+                }
+                if (regex.regexes && regex.regexes.length > 0) {
+                    for (let insideRegex of regex.regexes) {
+                        if (insideRegex.index < search.length && indexStart[insideRegex.index] != indexEnd[insideRegex.index]) {
+                            recurseSearchDecorations(insideRegex, search[insideRegex.index], index + indexStart[insideRegex.index])
+                        }
+                    }
                 }
             }
+        }
+        let startTime = Date.now();
+        let text = editor.document.getText();
+        try {
+            // search all regexes
+            for (let regexes of this.regexes) {
+                // has regex
+                if (this.regexes === undefined) {
+                    continue;
+                }
+                // check language
+                if (this.languages !== undefined && regexes.languages.indexOf(this.languageId) < 0) {
+                    continue;
+                }
+                // foreach regexes
+                for (let regex of regexes.regexes) {
+                    recurseSearchDecorations(regex, text);
+                }
+            }
+
+        }
+        catch (error) {
+            console.error(error);
+        }
+
+        let countDecoration = 0;
+        let recurseUpdateDecorations = (regex) => {
+            if (regex === undefined) {
+                return;
+            }
+            if (regex.decorations && regex.decorations.length > 0) {
+                for (let decoration of regex.decorations) {
+                    // create range
+                    let ranges = [];
+                    for (let range of decoration.ranges) {
+                        let startPosition = editor.document.positionAt(range.start);
+                        let endPosition = editor.document.positionAt(range.end);
+                        let vsRange = new vscode.Range(startPosition, endPosition);
+                        ranges.push({ range: vsRange });
+                    }
+                    // update decoration
+                    countDecoration += decoration.ranges.length;
+                    editor.setDecorations(
+                        this.decorations[decoration.decoration],
+                        ranges
+                    );
+                    decoration.ranges.length = 0;
+                    ranges.length = 0;
+                }
+            }
+            if (regex.regexes && regex.regexes.length > 0) {
+                for (let insideRegex of regex.regexes) {
+                    recurseUpdateDecorations(insideRegex);
+                }
+            }
+        }
+        try {
+            for (let regexes of this.regexes) {
+                for (let regex of regexes.regexes) {
+                    recurseUpdateDecorations(regex);
+                }
+            }
+            this.log("Update decorations at \"" + path.basename(editor.document.fileName) + "\" in " + (Date.now() - startTime) + "ms with " + (countDecoration) + " occurence(s)")
+        }
+        catch (error) {
+            console.error(error);
+            this.log(error);
         }
     }
 

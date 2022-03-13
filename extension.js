@@ -25,89 +25,70 @@ SOFTWARE.
 const vscode = require("vscode");
 const parser = require("./src/parser");
 
-const nameOfProperties = "highlight.regex";
-
 function activate(context) {
-    let activeEditor;
+    const nameOfProperties = "highlight.regex";
+
     let configuration = vscode.workspace.getConfiguration(nameOfProperties);
     let logger = vscode.window.createOutputChannel("Highlight regex");
     let parserObj = new parser.Parser(logger, configuration);
 
-    context.subscriptions.push(vscode.commands.registerCommand("highlight.regex.showReadme", () => {
-        vscode.commands.executeCommand("markdown.showPreview",
-            vscode.Uri.file(context.asAbsolutePath("README.md")));
-    }));
+    let lastVisibleEditors = [];
+    let timeoutTimer = [];
 
-    // first launch
-    if (vscode.window.visibleTextEditors.length > 0) {
-        let textEditors = vscode.window.visibleTextEditors;
-        for (let i = 0 ; i < textEditors.length ; i++) {
-            parserObj.updateDecorations(textEditors[i]);
-        }
-    }
-
-    // set first activeEditor
-    if (vscode.window.activeTextEditor) {
-        activeEditor = vscode.window.activeTextEditor;
-    }
-
-    // function call by triggerUpdateDecorations
-    let updateDecorations = function () {
-        if (!activeEditor) {
-            return ;
-        }
-        parserObj.updateDecorations(activeEditor);
-    };
+    // add command for open readme
+    context.subscriptions.push(
+        vscode.commands.registerCommand("highlight.regex.showReadme", () => {
+            vscode.commands.executeCommand("markdown.showPreview",
+                vscode.Uri.file(context.asAbsolutePath("README.md")));
+        })
+    );
 
     // event configuration change
     vscode.workspace.onDidChangeConfiguration(event => {
         configuration = vscode.workspace.getConfiguration(nameOfProperties);
-        let textEditors = vscode.window.visibleTextEditors;
-        for (let i = 0 ; i < textEditors.length ; i++) {
-            parserObj.resetDecorations(textEditors[i]);
+        let visibleTextEditors = vscode.window.visibleTextEditors;
+        for (let i = 0; i < visibleTextEditors.length; i++) {
+            parserObj.resetDecorations(visibleTextEditors[i]);
         }
         parserObj.loadConfigurations(configuration);
-        for (let i = 0 ; i < textEditors.length ; i++) {
-            parserObj.updateDecorations(textEditors[i]);
+        for (let i = 0; i < visibleTextEditors.length; i++) {
+            triggerUpdate(visibleTextEditors[i]);
         }
     });
 
-    // event change text editor focus
-    vscode.window.onDidChangeActiveTextEditor(editor => {
-        activeEditor = editor;
-        if (editor) {
-            triggerUpdateDecorations();
-        }
-    }, null, context.subscriptions);
-
     // event change all text editor
-    vscode.window.onDidChangeVisibleTextEditors(editors => {
-        let textEditors = editors;
-        for (let i = 0 ; i < textEditors.length ; i++) {
-            parserObj.updateDecorations(textEditors[i]);
+    vscode.window.onDidChangeVisibleTextEditors(visibleTextEditors => {
+        let newVisibleEditors = [];
+        for (let i = 0; i < visibleTextEditors.length; i++) {
+            let key = [visibleTextEditors[i].document.uri.path, visibleTextEditors[i].viewColumn];
+            newVisibleEditors[key] = true;
+            if (!(key in lastVisibleEditors)) {
+                triggerUpdate(visibleTextEditors[i]);
+            }
         }
+        lastVisibleEditors = newVisibleEditors;
     });
 
     // event change text content
     vscode.workspace.onDidChangeTextDocument(event => {
-        if (activeEditor && event.document === activeEditor.document) {
-            triggerUpdateDecorations();
+        let openEditors = vscode.window.visibleTextEditors.filter(
+            (editor) => editor.document.uri === event.document.uri
+        );
+        for (let i = 0; i < openEditors.length; i++) {
+            triggerUpdate(openEditors[i]);
         }
     });
 
     // trigger call update decoration
-    var timeout;
-    function triggerUpdateDecorations() {
-        if (timeout) {
-            clearTimeout(timeout);
+    function triggerUpdate(editor) {
+        let key = [editor.document.uri.path, editor.viewColumn];
+        if (key in timeoutTimer && timeoutTimer[key]) {
+            clearTimeout(timeoutTimer[key]);
         }
-        timeout = setTimeout(updateDecorations, configuration.timeout);
+        timeoutTimer[key] = setTimeout(() => { parserObj.updateDecorations(editor) }, configuration.timeout);
     }
 }
 
-function desactivate() {}
+function desactivate() { }
 
-module.exports = {
-    activate,
-    desactivate
-}
+module.exports = { activate, desactivate }
