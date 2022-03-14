@@ -32,8 +32,6 @@ class Parser {
         this.regexes = [];
         this.decorations = [];
         this.loadConfigurations(configuration);
-        this.worker = new Worker(path.resolve(__dirname, 'worker.js'));
-        this.workerAtMessage();
     }
 
     //
