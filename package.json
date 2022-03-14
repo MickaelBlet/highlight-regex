@@ -2,7 +2,7 @@
     "name": "highlight-regex",
     "displayName": "Highlight - Regex",
     "description": "Highlight with regex",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "publisher": "mblet",
     "engines": {
         "vscode": "^0.0.0"

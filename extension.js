@@ -35,6 +35,12 @@ function activate(context) {
     let lastVisibleEditors = [];
     let timeoutTimer = [];
 
+    // first launch
+    let visibleTextEditors = vscode.window.visibleTextEditors;
+    for (let i = 0; i < visibleTextEditors.length; i++) {
+        triggerUpdate(visibleTextEditors[i]);
+    }
+
     // add command for open readme
     context.subscriptions.push(
         vscode.commands.registerCommand("highlight.regex.showReadme", () => {
