@@ -207,11 +207,11 @@ class Parser {
             // search all regexes
             for (let regexes of this.regexes) {
                 // has regex
-                if (this.regexes === undefined) {
+                if (regexes.regexes === undefined) {
                     continue;
                 }
                 // check language
-                if (this.languages !== undefined && regexes.languages.indexOf(this.languageId) < 0) {
+                if (regexes.languages != undefined && regexes.languages.indexOf(editor.document.languageId) < 0) {
                     continue;
                 }
                 // foreach regexes
