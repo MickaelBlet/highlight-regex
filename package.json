@@ -1,8 +1,8 @@
 {
     "name": "highlight-regex",
     "displayName": "Highlight - Regex",
-    "description": "Highlight with regex",
-    "version": "0.3.3",
+    "description": "Highlight (decorate) what you want with Regex",
+    "version": "0.3.4",
     "publisher": "mblet",
     "engines": {
         "vscode": "^0.0.0"
@@ -19,6 +19,7 @@
     "categories": [
         "Visualization"
     ],
+    "icon": "images/icon.drawio.png",
     "contributes": {
         "commands": [
             {
@@ -65,23 +66,37 @@
                                             "decorations": [
                                                 {
                                                     "index": 1,
-                                                    "color": "#FFFFFF",
-                                                    "backgroundColor": "#FF990090",
-                                                    "border": "1px solid #FF990050",
                                                     "borderRadius": "4px",
                                                     "fontWeight": "bold",
                                                     "overviewRulerColor": "#FF9900FF",
-                                                    "overviewRulerLane": 4
+                                                    "overviewRulerLane": 4,
+                                                    "light": {
+                                                        "color": "#000000",
+                                                        "backgroundColor": "#FF990050",
+                                                        "border": "1px solid #FF990090"
+                                                    },
+                                                    "dark": {
+                                                        "color": "#FFFFFF",
+                                                        "backgroundColor": "#FF990090",
+                                                        "border": "1px solid #FF990050"
+                                                    }
                                                 },
                                                 {
                                                     "index": 2,
-                                                    "color": "#FFFFFF",
-                                                    "backgroundColor": "#FF000090",
-                                                    "border": "1px solid #FF000050",
                                                     "borderRadius": "4px",
                                                     "fontWeight": "bold",
                                                     "overviewRulerColor": "#FF0000FF",
-                                                    "overviewRulerLane": 4
+                                                    "overviewRulerLane": 4,
+                                                    "light": {
+                                                        "color": "#000000",
+                                                        "backgroundColor": "#FF000050",
+                                                        "border": "1px solid #FF000090"
+                                                    },
+                                                    "dark": {
+                                                        "color": "#FFFFFF",
+                                                        "backgroundColor": "#FF990090",
+                                                        "border": "1px solid #FF990050"
+                                                    }
                                                 }
                                             ]
                                         }

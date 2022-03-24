@@ -153,14 +153,11 @@ class Parser {
         if (!editor) {
             return;
         }
-        if (editor.document.uri.scheme == "output") {
-            return;
-        }
-        var recurseSearchDecorations = function (regex, text, index = 0) {
+        var recurseSearchDecorations = (regex, text, index = 0) => {
             let search;
             regex.regexCount = 0;
             while (search = regex.regexRegExp.exec(text)) {
-                regex.regexCount += 1;
+                regex.regexCount++;
                 if (regex.regexCount > regex.regexLimit) {
                     continue;
                 }
@@ -262,7 +259,9 @@ class Parser {
                     recurseUpdateDecorations(regex);
                 }
             }
-            this.log("Update decorations at \"" + path.basename(editor.document.fileName) + "\" in " + (Date.now() - startTime) + "ms with " + (countDecoration) + " occurence(s)")
+            if (countDecoration > 0) {
+                this.log("Update decorations at \"" + path.basename(editor.document.fileName) + "\" in " + (Date.now() - startTime) + "ms with " + (countDecoration) + " occurence(s)")
+            }
         }
         catch (error) {
             console.error(error);
