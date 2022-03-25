@@ -2,12 +2,13 @@
     "name": "highlight-regex",
     "displayName": "Highlight - Regex",
     "description": "Highlight (decorate) what you want with Regex",
-    "version": "0.3.4",
+    "version": "0.3.5",
     "publisher": "mblet",
     "engines": {
         "vscode": "^0.0.0"
     },
     "main": "./extension.js",
+    "browser": "./extension.js",
     "license": "MIT",
     "repository": {
         "type": "git",
