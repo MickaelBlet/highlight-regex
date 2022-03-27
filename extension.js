@@ -157,10 +157,14 @@ class Parser {
             while (search = regex.regexRegExp.exec(text)) {
                 regex.regexCount++;
                 if (regex.regexCount > regex.regexLimit) {
-                    continue;
+                    console.log("Count overload pattern: " + regex.regexRegExp.source + " > " + regex.regexLimit);
+                    this.log("Count overload pattern " + regex.regexRegExp.source + " > " + regex.regexLimit);
+                    break;
                 }
                 if (search[0].length == 0) {
-                    continue;
+                    console.error("Bad pattern: " + regex.regexRegExp.source);
+                    this.log("Error: Bad pattern " + regex.regexRegExp.source);
+                    break;
                 }
                 let indexCount = search.index;
                 let indexStart = [];

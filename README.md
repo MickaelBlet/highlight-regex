@@ -18,7 +18,7 @@ The first objects can take a string list (**languages**) and object list (**rege
 ```jsonc
 "highlight.regex.regexes": [
     {
-        "languages": [ "c", "cpp", "java" ],
+        "languages": [ "c", "cpp", "go", "java", "javascript", "php", "rust", "typescript" ],
         "regexes": [
             {
                 // regex to find all within comments
@@ -80,7 +80,7 @@ The first objects can take a string list (**languages**) and object list (**rege
 
 ### Examples
 
-highlight member variables in cpp and keyword this
+- highlight member variables in cpp and keyword this
 ```jsonc
 "highlight-regex.regexes": [
     {
@@ -110,4 +110,63 @@ highlight member variables in cpp and keyword this
 
 <p align="center">
   <img src="images/memberVariableThis.drawio.png" >
+</p>
+
+- Todo and Tada for python
+```jsonc
+{
+    "languages": [ "python" ],
+    "regexes": [
+        {
+            "regex": "(\"\"\"[^]*?\"\"\")|(#[^]*?(?:(?<!\\\\)$))",
+            "regexFlag": "gm",
+            "regexes": [
+                {
+                    "index": 0,
+                    "regex": "(\\bTODO\\b)|(\\bTADA\\b)",
+                    "regexFlag": "gmi",
+                    "decorations": [
+                        {
+                            "index": 1,
+                            "borderRadius": "4px",
+                            "fontWeight": "bold",
+                            "overviewRulerColor": "#FF9900FF",
+                            "overviewRulerLane": 4,
+                            "light": {
+                                "color": "#000000",
+                                "backgroundColor": "#FF990050",
+                                "border": "1px solid #FF990090",
+                            },
+                            "dark": {
+                                "color": "#FFFFFF",
+                                "backgroundColor": "#FF990090",
+                                "border": "1px solid #FF990050",
+                            }
+                        },
+                        {
+                            "index": 2,
+                            "borderRadius": "4px",
+                            "fontWeight": "bold",
+                            "overviewRulerColor": "#FF0000FF",
+                            "overviewRulerLane": 4,
+                            "light": {
+                                "color": "#000000",
+                                "backgroundColor": "#FF000050",
+                                "border": "1px solid #FF000090",
+                            },
+                            "dark": {
+                                "color": "#FFFFFF",
+                                "backgroundColor": "#FF000090",
+                                "border": "1px solid #FF000050",
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+<p align="center">
+  <img src="images/pythonTodoTada.drawio.png" >
 </p>
