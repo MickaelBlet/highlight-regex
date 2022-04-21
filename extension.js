@@ -314,7 +314,7 @@ function activate(context) {
     vscode.window.onDidChangeVisibleTextEditors(visibleTextEditors => {
         let newVisibleEditors = [];
         for (let i = 0; i < visibleTextEditors.length; i++) {
-            let key = [visibleTextEditors[i].document.uri.path, visibleTextEditors[i].viewColumn];
+            let key = visibleTextEditors[i].document.uri.toString(true) + visibleTextEditors[i].viewColumn;
             newVisibleEditors[key] = true;
             if (!(key in lastVisibleEditors)) {
                 triggerUpdate(visibleTextEditors[i]);
@@ -335,7 +335,7 @@ function activate(context) {
 
     // trigger call update decoration
     function triggerUpdate(editor) {
-        let key = [editor.document.uri.path, editor.viewColumn];
+        let key = editor.document.uri.toString(true) + editor.viewColumn;
         if (key in timeoutTimer && timeoutTimer[key]) {
             clearTimeout(timeoutTimer[key]);
         }
