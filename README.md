@@ -6,7 +6,7 @@ Highlight (*decorate*) what you want with Regex in VS Code
 ## Regexes Settings
 
 The regexes property is a object list.
-The first objects can take a string list (**languages**) and object list (**regexes**).
+The first objects can take a string list (**languageIds**) and object list (**regexes**).
 **regexes** object properties:
 - **regex**: string of regex
 - **regexFlag**: flag of regex (default "gm")
@@ -18,7 +18,7 @@ The first objects can take a string list (**languages**) and object list (**rege
 ```jsonc
 "highlight.regex.regexes": [
     {
-        "languages": [ "c", "cpp", "go", "java", "javascript", "php", "rust", "typescript" ],
+        "languageIds": [ "c", "cpp", "go", "java", "javascript", "php", "rust", "typescript" ],
         "regexes": [
             {
                 // regex to find all within comments
@@ -84,7 +84,7 @@ The first objects can take a string list (**languages**) and object list (**rege
 ```jsonc
 "highlight-regex.regexes": [
     {
-        "languages": [ "c", "cpp" ],
+        "languageIds": [ "c", "cpp" ],
         "regexes": [
             {
                 "regex": "(?:['][^]*?(?:(?<!(?<!\\\\)\\\\)['])|[\"][^]*?(?:(?<!\\\\)[\"])|\\/\\*[^]*?\\*\\/|//[^]*?(?:(?<!\\\\)$)|#[^]*?(?:(?<!\\\\)$))|(\\b(?!__)_\\w+\\b)|(\\bthis\\b)", // not in string or comment or define
@@ -115,7 +115,7 @@ The first objects can take a string list (**languages**) and object list (**rege
 - Todo and Tada for python
 ```jsonc
 {
-    "languages": [ "python" ],
+    "languageIds": [ "python" ],
     "regexes": [
         {
             "regex": "(\"\"\"[^]*?\"\"\")|(#[^]*?(?:(?<!\\\\)$))",

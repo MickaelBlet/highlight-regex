@@ -77,7 +77,7 @@ class Parser {
             // compile regex
             try {
                 // stock languages
-                let languages = (regexList.languages) ? regexList.languages : undefined;
+                let languages = (regexList.languageIds) ? regexList.languageIds : undefined;
                 let regexes = [];
                 if (regexList.regexes && regexList.regexes.length > 0) {
                     for (let regex of regexList.regexes) {
@@ -271,7 +271,7 @@ class Parser {
         }
     }
 
-} // class Parser
+}; // class Parser
 
 function activate(context) {
     const nameOfProperties = "highlight.regex";
@@ -288,14 +288,6 @@ function activate(context) {
     for (let i = 0; i < visibleTextEditors.length; i++) {
         triggerUpdate(visibleTextEditors[i]);
     }
-
-    // add command for open readme
-    context.subscriptions.push(
-        vscode.commands.registerCommand("highlight.regex.showReadme", () => {
-            vscode.commands.executeCommand("markdown.showPreview",
-                vscode.Uri.file(context.asAbsolutePath("README.md")));
-        })
-    );
 
     // event configuration change
     vscode.workspace.onDidChangeConfiguration(event => {

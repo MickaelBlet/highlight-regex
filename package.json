@@ -2,7 +2,7 @@
     "name": "highlight-regex",
     "displayName": "Highlight - Regex",
     "description": "Highlight (decorate) what you want with Regex",
-    "version": "0.3.10",
+    "version": "0.4.0",
     "publisher": "mblet",
     "engines": {
         "vscode": "^0.0.0"
@@ -23,12 +23,6 @@
     ],
     "icon": "images/icon.drawio.png",
     "contributes": {
-        "commands": [
-            {
-                "command": "highlight.regex.showReadme",
-                "title": "Show readme of highlight regex"
-            }
-        ],
         "configuration": {
             "properties": {
                 "highlight.regex.defaultRegexLimit": {
@@ -49,7 +43,7 @@
                 "highlight.regex.regexes": {
                     "default": [
                         {
-                            "languages": [
+                            "languageIds": [
                                 "c",
                                 "cpp",
                                 "go",
@@ -114,19 +108,19 @@
                     ],
                     "type": "array",
                     "title": "Regexes",
-                    "markdownDescription": "Set search regex with decoration\n\nExample at [README.md](command:highlight.regex.showReadme)\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
+                    "markdownDescription": "Set search regex with decoration\n\nDefault setting at [Marketplace extension](https://marketplace.visualstudio.com/items?itemName=mblet.highlight-regex#default-regexes-setting)\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
                     "items": {
                         "type": "object",
                         "title": "Regexes",
                         "properties": {
-                            "languages": {
+                            "languageIds": {
                                 "type": "array",
-                                "title": "Languages",
-                                "description": "List of language for activated decorations",
+                                "title": "languageIds",
+                                "description": "List of language Id for activated decorations",
                                 "items": {
                                     "type": "string",
                                     "title": "Language",
-                                    "description": "Language for activated decorations"
+                                    "description": "Language Id for activated decorations"
                                 }
                             },
                             "regexes": {
