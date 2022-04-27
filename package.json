@@ -2,7 +2,7 @@
     "name": "highlight-regex",
     "displayName": "Highlight - Regex",
     "description": "Highlight (decorate) what you want with Regex",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "publisher": "mblet",
     "engines": {
         "vscode": "^0.0.0"
@@ -18,8 +18,7 @@
         "onStartupFinished"
     ],
     "categories": [
-        "Visualization",
-        "Other"
+        "Visualization"
     ],
     "icon": "images/icon.drawio.png",
     "contributes": {
