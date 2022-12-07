@@ -82,7 +82,7 @@ The first objects can take a string list (**languageIds**) and object list (**re
 
 - highlight member variables in cpp and keyword this
 ```jsonc
-"highlight-regex.regexes": [
+"highlight.regex.regexes": [
     {
         "languageIds": [ "c", "cpp" ],
         "regexes": [
