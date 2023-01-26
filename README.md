@@ -1,5 +1,4 @@
 # Highlight regex
-[![](https://vsmarketplacebadge.apphb.com/version/mblet.highlight-regex.svg)](https://marketplace.visualstudio.com/items?itemName=mblet.highlight-regex)
 
 Highlight (*decorate*) what you want with Regex in VS Code
 

@@ -92,6 +92,7 @@ class Parser {
             catch (error) {
                 console.error(error);
                 this.log(error);
+                vscode.window.showErrorMessage(error.toString(), "Close");
             }
         }
     }
