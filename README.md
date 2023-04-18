@@ -113,59 +113,156 @@ The first objects can take a string list (**languageIds**) and object list (**re
 
 - Todo and Tada for python
 ```jsonc
-{
-    "languageIds": [ "python" ],
-    "regexes": [
-        {
-            "regex": "(\"\"\"[^]*?\"\"\")|(#[^]*?(?:(?<!\\\\)$))",
-            "regexFlag": "gm",
-            "regexes": [
-                {
-                    "index": 0,
-                    "regex": "(\\bTODO\\b)|(\\bTADA\\b)",
-                    "regexFlag": "gmi",
-                    "decorations": [
-                        {
-                            "index": 1,
-                            "borderRadius": "4px",
-                            "fontWeight": "bold",
-                            "overviewRulerColor": "#FF9900FF",
-                            "overviewRulerLane": 4,
-                            "light": {
-                                "color": "#000000",
-                                "backgroundColor": "#FF990050",
-                                "border": "1px solid #FF990090",
+"highlight.regex.regexes": [
+    {
+        "languageIds": [ "python" ],
+        "regexes": [
+            {
+                "regex": "(\"\"\"[^]*?\"\"\")|(#[^]*?(?:(?<!\\\\)$))",
+                "regexFlag": "gm",
+                "regexes": [
+                    {
+                        "index": 0,
+                        "regex": "(\\bTODO\\b)|(\\bTADA\\b)",
+                        "regexFlag": "gmi",
+                        "decorations": [
+                            {
+                                "index": 1,
+                                "borderRadius": "4px",
+                                "fontWeight": "bold",
+                                "overviewRulerColor": "#FF9900FF",
+                                "overviewRulerLane": 4,
+                                "light": {
+                                    "color": "#000000",
+                                    "backgroundColor": "#FF990050",
+                                    "border": "1px solid #FF990090",
+                                },
+                                "dark": {
+                                    "color": "#FFFFFF",
+                                    "backgroundColor": "#FF990090",
+                                    "border": "1px solid #FF990050",
+                                }
                             },
-                            "dark": {
-                                "color": "#FFFFFF",
-                                "backgroundColor": "#FF990090",
-                                "border": "1px solid #FF990050",
+                            {
+                                "index": 2,
+                                "borderRadius": "4px",
+                                "fontWeight": "bold",
+                                "overviewRulerColor": "#FF0000FF",
+                                "overviewRulerLane": 4,
+                                "light": {
+                                    "color": "#000000",
+                                    "backgroundColor": "#FF000050",
+                                    "border": "1px solid #FF000090",
+                                },
+                                "dark": {
+                                    "color": "#FFFFFF",
+                                    "backgroundColor": "#FF000090",
+                                    "border": "1px solid #FF000050",
+                                }
                             }
-                        },
-                        {
-                            "index": 2,
-                            "borderRadius": "4px",
-                            "fontWeight": "bold",
-                            "overviewRulerColor": "#FF0000FF",
-                            "overviewRulerLane": 4,
-                            "light": {
-                                "color": "#000000",
-                                "backgroundColor": "#FF000050",
-                                "border": "1px solid #FF000090",
-                            },
-                            "dark": {
-                                "color": "#FFFFFF",
-                                "backgroundColor": "#FF000090",
-                                "border": "1px solid #FF000050",
-                            }
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
-}
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
 ```
 <p align="center">
   <img src="images/pythonTodoTada.drawio.png" >
 </p>
+
+- cmake variable in string
+```
+"highlight.regex.regexes": [
+    {
+        "languageIds": ["cmake"],
+        "regexes": [
+            {
+                "regex": "(?<!^\\s*#.*)\"[^]*?\"",
+                "regexes": [
+                    {
+                        "regex": "([\\$])(ENV)?([{])(\\w+)([}])",
+                        "decorations": [
+                            {
+                                "index": 1,
+                                "color": "#569CD6"
+                            },
+                            {
+                                "index": 2,
+                                "color": "#569CD6"
+                            },
+                            {
+                                "index": 3,
+                                "color": "#569CD6"
+                            },
+                            {
+                                "index": 4,
+                                "color": "#569CD6"
+                            },
+                            {
+                                "index": 5,
+                                "color": "#569CD6"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
+```
+
+- separate big number
+```
+"highlight.regex.regexes": [
+    {
+        "regexes": [
+            {
+                "regex": "(?:[#][0-9a-zA-Z]*|([0-9]{4,}))",
+                "regexes": [
+                    {
+                        "index": 1,
+                        "regex": "^([0-9]+)([0-9]{3})$",
+                        "decorations": [
+                            {
+                                "index": 2,
+                                "before": {
+                                    "contentText": ".",
+                                    "margin": "0px; font-size: 3px"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "index": 1,
+                        "regex": "^([0-9]+)([0-9]{3})([0-9]{3})$",
+                        "decorations": [
+                            {
+                                "index": 2,
+                                "before": {
+                                    "contentText": ".",
+                                    "margin": "0px; font-size: 3px"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "index": 1,
+                        "regex": "^([0-9]*)([0-9]{3})([0-9]{3})([0-9]{3})$",
+                        "decorations": [
+                            {
+                                "index": 2,
+                                "before": {
+                                    "contentText": ".",
+                                    "margin": "0px; font-size: 3px"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
+```
