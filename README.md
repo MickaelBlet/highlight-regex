@@ -173,7 +173,7 @@ The first objects can take a string list (**languageIds**) and object list (**re
 </p>
 
 - cmake variable in string
-```
+```jsonc
 "highlight.regex.regexes": [
     {
         "languageIds": ["cmake"],
@@ -214,12 +214,12 @@ The first objects can take a string list (**languageIds**) and object list (**re
 ```
 
 - separate big number
-```
+```jsonc
 "highlight.regex.regexes": [
     {
         "regexes": [
             {
-                "regex": "(?:[#][0-9a-zA-Z]*|([0-9]{4,}))",
+                "regex": "(?:[#][0-9a-zA-Z]*|((?<![.][0-9]*)[0-9]{4,}))",
                 "regexes": [
                     {
                         "index": 1,
@@ -253,6 +253,50 @@ The first objects can take a string list (**languageIds**) and object list (**re
                         "decorations": [
                             {
                                 "index": 2,
+                                "before": {
+                                    "contentText": ".",
+                                    "margin": "0px; font-size: 3px"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "regex": "(?:[#][0-9a-zA-Z]*|((?:[.,])[0-9]{4,}))",
+                "regexes": [
+                    {
+                        "index": 1,
+                        "regex": "^([.,])([0-9]{3})([0-9]+)$",
+                        "decorations": [
+                            {
+                                "index": 3,
+                                "before": {
+                                    "contentText": ".",
+                                    "margin": "0px; font-size: 3px"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "index": 1,
+                        "regex": "^([.,])([0-9]{3})([0-9]{3})([0-9]+)$",
+                        "decorations": [
+                            {
+                                "index": 4,
+                                "before": {
+                                    "contentText": ".",
+                                    "margin": "0px; font-size: 3px"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "index": 1,
+                        "regex": "^([.,])([0-9]{3})([0-9]{3})([0-9]{3})([0-9]+)$",
+                        "decorations": [
+                            {
+                                "index": 5,
                                 "before": {
                                     "contentText": ".",
                                     "margin": "0px; font-size: 3px"
