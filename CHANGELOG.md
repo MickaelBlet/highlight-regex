@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 0.4.3: April 20, 2023
+### Update
+* examples
+* README
+
 ## Version 0.4.2: January 26, 2023
 ### New Features
 * Add error popup when your configuration is bad.
