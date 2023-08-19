@@ -7,17 +7,17 @@
         "languageIds": [ "c", "cpp" ],
         "regexes": [
             {
-                "regex": "(?:['][^]*?(?:(?<!(?<!\\\\)\\\\)['])|[\"][^]*?(?:(?<!\\\\)[\"])|\\/\\*[^]*?\\*\\/|//[^]*?(?:(?<!\\\\)$)|#[^]*?(?:(?<!\\\\)$))|(\\b(?!__)_\\w+\\b)|(\\bthis\\b)", // not in string or comment or define
+                "regex": "(?:['][^]*?(?:(?<!(?<!\\\\)\\\\)['])|[\"][^]*?(?:(?<!\\\\)[\"])|\\/\\*[^]*?\\*\\/|//[^]*?(?:(?<!\\\\)$)|#[^]*?(?:(?<!\\\\)$))|(?<var>\\b(?!__)_\\w+\\b)|(?<this>\\bthis\\b)", // not in string or comment or define
                 "regexFlag": "gm",
                 "regexLimit": 10000,
                 "decorations": [
                     {
-                        "index": 1, // _\w+
+                        "index": "var", // _\w+
                         "fontWeight": "bold; text-shadow: 0px 0px 10px",
                         "fontStyle": "italic"
                     },
                     {
-                        "index": 2, // this
+                        "index": "this", // this
                         "fontWeight": "bold",
                         "fontStyle": "italic"
                     }
@@ -100,36 +100,14 @@
         "languageIds": ["cmake"],
         "regexes": [
             {
-                "regex": "(?:#\\[\\[[^]*?\\]\\]|#[^]*?(?:(?<!\\\\)$))|(\"[^]*?\")",
+                "regex": "(?:#\\[\\[[^]*?\\]\\]|#[^]*?(?:(?<!\\\\)$))|(?<string>\"[^]*?(?:(?<!\\\\))\")",
                 "regexFlag": "gm",
                 "regexes": [
                     {
-                        "index": 1,
-                        "regex": "([\\$])(ENV)?([{])(\\w+)([}])",
+                        "index": "string",
+                        "regex": "[\\$](?:ENV)?[{]\\w+[}]",
                         "decorations": [
                             {
-                                // $
-                                "index": 1,
-                                "color": "#569CD6"
-                            },
-                            {
-                                // ENV
-                                "index": 2,
-                                "color": "#569CD6"
-                            },
-                            {
-                                // {
-                                "index": 3,
-                                "color": "#569CD6"
-                            },
-                            {
-                                // \w+
-                                "index": 4,
-                                "color": "#569CD6"
-                            },
-                            {
-                                // }
-                                "index": 5,
                                 "color": "#569CD6"
                             }
                         ]

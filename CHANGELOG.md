@@ -1,9 +1,15 @@
 # Change Log
 
+## Version 1.0.0: August 19, 2023
+### New Features
+* Use name capture group like index.
+### Fix
+* Capture group not preceded by another capture group.
+
 ## Version 0.4.3: April 20, 2023
 ### Update
-* examples
-* README
+* examples.
+* README.
 
 ## Version 0.4.2: January 26, 2023
 ### New Features

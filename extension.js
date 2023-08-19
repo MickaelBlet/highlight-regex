@@ -39,7 +39,400 @@ class Parser {
     // load configuration from contributions
     loadConfigurations(configuration) {
         let loadRegexes = (configuration, regex) => {
+            // transform 'a(?: )bc(def(ghi)xyz)' to '(a)((?: ))(bc)((def)(ghi)(xyz))'
+            let addHiddenMatchGroups = (sRegex) => {
+                let jumpToEndOfBrace = (text, index) => {
+                    let level = 1;
+                    while (level > 0) {
+                        index++;
+                        if (index == text.length) {
+                            break;
+                        }
+                        switch (text[index]) {
+                            case '}':
+                                if ('\\' !== text[index - 1]) {
+                                    level--;
+                                    if ('?' === text[index + 1]) {
+                                        index++; // jump '}'
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    return index;
+                }
+
+                let jumpToEndOfBracket = (text, index) => {
+                    let level = 1;
+                    while (level > 0) {
+                        index++;
+                        if (index == text.length) {
+                            break;
+                        }
+                        switch (text[index]) {
+                            case ']':
+                                if ('\\' !== text[index - 1]) {
+                                    level--;
+                                    if ('*' === text[index + 1]) {
+                                        index++; // jump ']'
+                                    }
+                                    else if ('+' === text[index + 1]) {
+                                        index++; // jump ']'
+                                    }
+                                    else if ('?' === text[index + 1]) {
+                                        index++; // jump ']'
+                                    }
+                                    else if ('{' === text[index + 1]) {
+                                        index++; // jump ']'
+                                        index = jumpToEndOfBrace(text, index);
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    return index;
+                }
+
+                let jumpToEndOfParenthesis = (text, index) => {
+                    let level = 1;
+                    while (level > 0) {
+                        index++;
+                        if (index == text.length) {
+                            break;
+                        }
+                        switch (text[index]) {
+                            case '(':
+                                if ('\\' !== text[index - 1]) {
+                                    level++;
+                                }
+                                break;
+                            case ')':
+                                if ('\\' !== text[index - 1]) {
+                                    level--;
+                                    if ('*' === text[index + 1]) {
+                                        index++; // jump ')'
+                                    }
+                                    else if ('+' === text[index + 1]) {
+                                        index++; // jump ')'
+                                    }
+                                    else if ('?' === text[index + 1]) {
+                                        index++; // jump ')'
+                                    }
+                                    else if ('{' === text[index + 1]) {
+                                        index++; // jump ')'
+                                        index = jumpToEndOfBrace(text, index);
+                                    }
+                                }
+                                break;
+                            case '[':
+                                if ('\\' !== text[index - 1]) {
+                                    index = jumpToEndOfBracket(text, index);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    return index;
+                }
+
+                let splitOrRegex = (text) => {
+                    let ret = [];
+                    let start = 0;
+                    let end = 0;
+                    for (let i = 0 ; i < text.length ; i++) {
+                        // is bracket
+                        if ('[' === text[i] && (i == 0 || i > 0 && '\\' !== text[i - 1])) {
+                            i = jumpToEndOfBracket(text, i);
+                        }
+                        // is real match group
+                        if ('(' === text[i] && (i == 0 || i > 0 && '\\' !== text[i - 1])) {
+                            i = jumpToEndOfParenthesis(text, i);
+                        }
+                        // is or
+                        if ('|' === text[i]) {
+                            end = i;
+                            ret.push(text.substr(start, end - start));
+                            start = i + 1;
+                        }
+                    }
+                    if (start > 0) {
+                        ret.push(text.substr(start, text.length - start));
+                    }
+                    else {
+                        ret.push(text);
+                    }
+                    return ret;
+                }
+                function hasMatchGroup(str) {
+                    let hasGroup = false;
+                    // check if match group exists
+                    for (let i = 0 ; i < str.length ; i++) {
+                        if ('[' === str[i] && (i == 0 || i > 0 && '\\' !== str[i - 1])) {
+                            i = jumpToEndOfBracket(str, i);
+                        }
+                        if ('(' === str[i] && (i == 0 || i > 0 && '\\' !== str[i - 1])) {
+                            hasGroup = true;
+                            break;
+                        }
+                    }
+                    return hasGroup;
+                }
+
+                function convertBackSlach(str, offset, input) {
+                    return '####B4CKSL4CHB4CKSL4CH####';
+                }
+                function reloadBackSlach(str, offset, input) {
+                    return '\\\\';
+                }
+
+                // replace all \\
+                let sRegexConverted = sRegex.replace(/\\\\/gm, convertBackSlach);
+
+                let matchIndexToReal = {0: 0};
+                let matchNamedToReal = {};
+                let matchDependIndexes = {0: []};
+
+                // not match group found
+                if (!hasMatchGroup(sRegexConverted)) {
+                    // default return
+                    return {
+                        sRegex,
+                        matchIndexToReal,
+                        matchNamedToReal,
+                        matchDependIndexes
+                    }
+                }
+
+                // -------------------------------------------------------------------------
+                // create a newRegex
+
+                let newStrRegex = "";
+
+                let index = 1;
+                let realIndex = 1;
+
+                let debugIndexesPrefix = (realIndex = undefined) => {
+                    if (realIndex) {
+                        return (" " + index).slice(-2) + ":" + (" " + realIndex).slice(-2) + ": ";
+                    }
+                    else {
+                        return (" " + index).slice(-2) + ":--: ";
+                    }
+                }
+
+                let findGroups = (text, parentIndexes = [], dependIndexes = []) => {
+                    let addSimpleGroup = (str, prefix = '(', sufix = ')') => {
+                        // console.log(debugIndexesPrefix() + "'" + str + "'");
+
+                        // update newRegex
+                        newStrRegex += prefix + str + sufix;
+
+                        // add depend
+                        dependIndexes.push(index);
+
+                        index++;
+                    }
+                    let getEndOfGroup = (str, i) => {
+                        while (i > 0 && ')' !== str[i]) {
+                            i--;
+                        }
+                        return i;
+                    }
+
+                    let start = 0;
+                    let end = 0;
+
+                    for (let i = 0 ; i < text.length ; i++) {
+                        // is not capture group
+                        if ('(' === text[i] && '?' === text[i + 1] && (i == 0 || i > 0 && '\\' !== text[i - 1])) {
+                            // set cursor before found
+                            end = i;
+                            if (end - start > 0) {
+                                // before
+                                addSimpleGroup(text.substr(start, end - start));
+                            }
+
+                            // check type of not capture group
+
+                            i++; // jump '('
+                            i++; // jump '?'
+
+                            // is assert
+                            if ('<' === text[i] && ('=' === text[i + 1] || '!' === text[i + 1])) {
+                                newStrRegex += "((?<" + text[i + 1];
+                                i++; // jump '<'
+                                start = i + 1;
+                                i = jumpToEndOfParenthesis(text, i);
+                                end = i;
+                            }
+                            // is assert
+                            else if ('=' === text[i] || '!' === text[i]) {
+                                newStrRegex += "((?" + text[i];
+                                start = i + 1;
+                                i = jumpToEndOfParenthesis(text, i);
+                                end = i;
+                            }
+                            // is named
+                            else if ('<' === text[i]) {
+                                newStrRegex += "((?:";
+                                start = i + 1;
+                                for (let j = i; j < text.length; j++) {
+                                    i++;
+                                    if (text[j] === '>') {
+                                        break;
+                                    }
+                                }
+
+                                matchNamedToReal[text.substr(start, i - start - 1)] = index;
+
+                                // add index in real
+                                matchIndexToReal[realIndex] = index;
+                                matchDependIndexes[index] = dependIndexes.filter(item => !parentIndexes.includes(item));
+
+                                realIndex++;
+
+                                start = i;
+                                i = jumpToEndOfParenthesis(text, i);
+                                end = i;
+                            }
+                            // is non capture group
+                            else if (':' === text[i]) {
+                                newStrRegex += "((?:";
+                                start = i + 1;
+                                i = jumpToEndOfParenthesis(text, i);
+                                end = i;
+                            }
+                            else {
+                                console.error("bad pattern ?");
+                            }
+
+                            // get the end of group ')[...]'
+                            let endGroup = getEndOfGroup(text, end);
+                            // get content of group
+                            let sGroup = text.substr(start, endGroup - start);
+
+                            // add group
+                            // console.log(debugIndexesPrefix() + "'" + sGroup + "'");
+                            // add in depend
+                            dependIndexes.push(index);
+                            parentIndexes.push(index);
+
+                            index++;
+
+                            let splitRegex = splitOrRegex(sGroup);
+                            for (let j = 0; j < splitRegex.length; j++) {
+                                if (j > 0) {
+                                    newStrRegex += "|";
+                                }
+                                findGroups(splitRegex[j], parentIndexes.slice(), dependIndexes.slice());
+                            }
+
+                            parentIndexes.pop();
+
+                            newStrRegex += ")" + text.substr(endGroup + 1, end - endGroup) + ")";
+
+                            start = i + 1; // jump ')'
+                        }
+                        // is bracket
+                        if ('[' === text[i] && (i == 0 || i > 0 && '\\' !== text[i - 1])) {
+                            i = jumpToEndOfBracket(text, i);
+                        }
+                        // is real match group
+                        if ('(' === text[i] && '?' !== text[i + 1] && (i == 0 || i > 0 && '\\' !== text[i - 1])) {
+                            // set cursor before found
+                            end = i;
+                            if (end - start > 0) {
+                                // before
+                                addSimpleGroup(text.substr(start, end - start));
+                            }
+
+                            start = i + 1;
+                            i = jumpToEndOfParenthesis(text, i);
+                            end = i;
+
+                            // get the end of group ')[...]'
+                            let endGroup = getEndOfGroup(text, end);
+                            // get content of group
+                            let sGroup = text.substr(start, endGroup - start);
+
+                            // console.log(debugIndexesPrefix(realIndex) + "'" + sGroup + "' (real)");
+
+                            // add index in real
+                            matchIndexToReal[realIndex] = index;
+                            matchDependIndexes[index] = dependIndexes.filter(item => !parentIndexes.includes(item));
+
+                            dependIndexes.push(index);
+                            parentIndexes.push(index);
+
+                            index++;
+                            realIndex++;
+
+                            newStrRegex += "(";
+
+                            if (end !== endGroup) {
+                                newStrRegex += "(?:";
+                            }
+
+                            let splitRegex = splitOrRegex(sGroup);
+                            for (let j = 0; j < splitRegex.length; j++) {
+                                if (j > 0) {
+                                    newStrRegex += "|";
+                                }
+                                findGroups(splitRegex[j], parentIndexes.slice(), dependIndexes.slice());
+                            }
+
+                            parentIndexes.pop();
+
+                            if (end !== endGroup) {
+                                newStrRegex += ")" + text.substr(endGroup + 1, end - endGroup);
+                            }
+
+                            newStrRegex += ")";
+
+                            start = i + 1;
+                        }
+                    }
+                    if (start > 0 && text.length > (end + 1) && text.length - start > 0) {
+                        addSimpleGroup(text.substr(start, text.length - start));
+                    }
+                    else if (start == 0) {
+                            newStrRegex += text;
+                    }
+                }
+                let splitRegex = splitOrRegex(sRegexConverted);
+                for (let i = 0; i < splitRegex.length; i++) {
+                    if (i > 0) {
+                        newStrRegex += "|";
+                    }
+                    findGroups(splitRegex[i]);
+                }
+
+                // rollback replace all \\
+                newStrRegex = newStrRegex.replace(/####B4CKSL4CHB4CKSL4CH####/gm, reloadBackSlach)
+
+                // console.log("OldRegex: " + sRegex);
+                // console.log("NewRegex: " + newStrRegex);
+                // console.log(matchIndexToReal);
+                // console.log(matchNamedToReal);
+                // console.log(matchDependIndexes);
+
+                return {
+                    sRegex: newStrRegex,
+                    matchIndexToReal,
+                    matchNamedToReal,
+                    matchDependIndexes
+                };
+            }
             let regexRegExp = new RegExp(regex.regex, (regex.regexFlag) ? regex.regexFlag : configuration.defaultRegexFlag);
+            regexRegExp.test();
+            // add hide groups
+            let {sRegex, matchIndexToReal, matchNamedToReal, matchDependIndexes} = addHiddenMatchGroups(regex.regex);
+            regexRegExp = new RegExp(sRegex, (regex.regexFlag) ? regex.regexFlag : configuration.defaultRegexFlag);
             regexRegExp.test();
             let decorationList = [];
             if (regex.decorations && regex.decorations.length > 0) {
@@ -63,6 +456,9 @@ class Parser {
             return {
                 index: (regex.index) ? regex.index : 0,
                 regexRegExp: regexRegExp,
+                matchIndexToReal: matchIndexToReal,
+                matchNamedToReal: matchNamedToReal,
+                matchDependIndexes: matchDependIndexes,
                 regexCount: 0,
                 regexLimit: (regex.regexLimit) ? regex.regexLimit : configuration.defaultRegexLimit,
                 regexes: regexList,
@@ -167,35 +563,49 @@ class Parser {
                     this.log("Error: Bad pattern " + regex.regexRegExp.source);
                     break;
                 }
-                let indexCount = search.index;
-                let indexStart = [];
-                let indexEnd = [];
-                indexStart.push(search.index);
-                indexEnd.push(search.index + search[0].length);
-                for (let j = 1; j < search.length; j++) {
-                    indexStart.push(indexCount);
-                    if (search[j]) {
-                        indexCount += search[j].length;
-                    }
-                    indexEnd.push(indexCount);
-                }
                 if (regex.decorations && regex.decorations.length > 0) {
                     for (let decoration of regex.decorations) {
                         if (decoration.decoration === undefined) {
                             continue;
                         }
-                        if (decoration.index < search.length && indexStart[decoration.index] != indexEnd[decoration.index]) {
+                        let decorationRealIndex;
+                        if (typeof decoration.index === "number") {
+                            decorationRealIndex = regex.matchIndexToReal[decoration.index];
+                        }
+                        else {
+                            decorationRealIndex = regex.matchNamedToReal[decoration.index];
+                        }
+                        if (decorationRealIndex < search.length && search[decorationRealIndex] && search[decorationRealIndex].length > 0) {
+                            let decorationIndex = search.index;
+                            for (let j = 0; j < regex.matchDependIndexes[decorationRealIndex].length; j++) {
+                                if (search[regex.matchDependIndexes[decorationRealIndex][j]]) {
+                                    decorationIndex += search[regex.matchDependIndexes[decorationRealIndex][j]].length;
+                                }
+                            }
                             decoration.ranges.push({
-                                start: index + indexStart[decoration.index],
-                                end: index + indexEnd[decoration.index]
+                                start: index + decorationIndex,
+                                end: index + decorationIndex + search[decorationRealIndex].length
                             });
                         }
                     }
                 }
                 if (regex.regexes && regex.regexes.length > 0) {
                     for (let insideRegex of regex.regexes) {
-                        if (insideRegex.index < search.length && indexStart[insideRegex.index] != indexEnd[insideRegex.index]) {
-                            recurseSearchDecorations(insideRegex, search[insideRegex.index], index + indexStart[insideRegex.index])
+                        let insideRegexRealIndex;
+                        if (typeof insideRegex.index === "number") {
+                            insideRegexRealIndex = regex.matchIndexToReal[insideRegex.index]
+                        }
+                        else {
+                            insideRegexRealIndex = regex.matchNamedToReal[insideRegex.index];
+                        }
+                        if (insideRegexRealIndex < search.length && search[insideRegexRealIndex] && search[insideRegexRealIndex].length > 0) {
+                            let regexIndex = search.index;
+                            for (let j = 0; j < regex.matchDependIndexes[insideRegexRealIndex].length; j++) {
+                                if (search[regex.matchDependIndexes[insideRegexRealIndex][j]]) {
+                                    regexIndex += search[regex.matchDependIndexes[insideRegexRealIndex][j]].length;
+                                }
+                            }
+                            recurseSearchDecorations(insideRegex, search[insideRegexRealIndex], index + regexIndex)
                         }
                     }
                 }
