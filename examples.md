@@ -1,5 +1,36 @@
 # Examples
 
+## Simple example
+
+```jsonc
+"highlight.regex.regexes": [
+    {
+        "languageIds": [ "plaintext" ],
+        "regexes": [
+            {
+                "regex": "simple (?<example>example) with (groups)",
+                "regexFlag": "gmi",
+                "regexLimit": 10000,
+                "decorations": [
+                    {
+                        "index": "example",
+                        "color": "#F0F"
+                    },
+                    {
+                        "index": 2, // groups
+                        "color": "#0FF"
+                    }
+                ]
+            }
+        ]
+    }
+]
+```
+
+<p align="center">
+  <img src="images/simpleExample.drawio.png" >
+</p>
+
 ## Highlight member variables in cpp and keyword this
 ```jsonc
 "highlight.regex.regexes": [
