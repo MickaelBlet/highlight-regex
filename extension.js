@@ -77,12 +77,21 @@ class Parser {
                                     level--;
                                     if ('*' === text[index + 1]) {
                                         index++; // jump ']'
+                                        if ('?' === text[index + 1]) {
+                                            index++; // jump '*'
+                                        }
                                     }
                                     else if ('+' === text[index + 1]) {
                                         index++; // jump ']'
+                                        if ('?' === text[index + 1]) {
+                                            index++; // jump '+'
+                                        }
                                     }
                                     else if ('?' === text[index + 1]) {
                                         index++; // jump ']'
+                                        if ('?' === text[index + 1]) {
+                                            index++; // jump '?'
+                                        }
                                     }
                                     else if ('{' === text[index + 1]) {
                                         index++; // jump ']'
@@ -115,12 +124,21 @@ class Parser {
                                     level--;
                                     if ('*' === text[index + 1]) {
                                         index++; // jump ')'
+                                        if ('?' === text[index + 1]) {
+                                            index++; // jump '*'
+                                        }
                                     }
                                     else if ('+' === text[index + 1]) {
                                         index++; // jump ')'
+                                        if ('?' === text[index + 1]) {
+                                            index++; // jump '+'
+                                        }
                                     }
                                     else if ('?' === text[index + 1]) {
                                         index++; // jump ')'
+                                        if ('?' === text[index + 1]) {
+                                            index++; // jump '?'
+                                        }
                                     }
                                     else if ('{' === text[index + 1]) {
                                         index++; // jump ')'
@@ -427,6 +445,9 @@ class Parser {
                     matchNamedToReal,
                     matchDependIndexes
                 };
+            }
+            if (regex.regex === undefined) {
+                throw "regex not found";
             }
             let regexRegExp = new RegExp(regex.regex, (regex.regexFlag) ? regex.regexFlag : configuration.defaultRegexFlag);
             regexRegExp.test();
