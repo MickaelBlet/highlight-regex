@@ -255,3 +255,31 @@
 <p align="center">
   <img src="images/bigNumber.drawio.png" >
 </p>
+
+## Code block
+```jsonc
+"highlight.regex.regexes": [
+    {
+        "languageIds": [
+            "cpp"
+        ],
+        "regexes": [
+            {
+                "regex": "/\\* start user code \\*/[^]*?(?:/\\* end user code \\*/)",
+                "decorations": [
+                    {
+                        "backgroundColor": "#FFFFFF10",
+                        "overviewRulerColor": "#FFFFFF50",
+                        "overviewRulerLane": 4,
+                        "isWholeLine": true
+                    }
+                ]
+            }
+        ]
+    }
+]
+```
+
+<p align="center">
+  <img src="images/codeBlock.drawio.png" >
+</p>
