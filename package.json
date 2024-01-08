@@ -2,7 +2,7 @@
     "name": "highlight-regex",
     "displayName": "Highlight - Regex",
     "description": "Highlight (decorate) what you want with Regex",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "publisher": "mblet",
     "engines": {
         "vscode": "^0.0.0"
@@ -622,6 +622,15 @@
                                                         "type": "string",
                                                         "title": "gutterIconSize",
                                                         "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
+                                                    },
+                                                    "hoverMessage": {
+                                                        "type": ["array", "string"],
+                                                        "title": "hoverMessage",
+                                                        "description": "A message that should be rendered when hovering over the decoration.",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "line of message"
+                                                        }
                                                     },
                                                     "isWholeLine": {
                                                         "type": "boolean",
@@ -1442,6 +1451,15 @@
                                                                     "title": "gutterIconSize",
                                                                     "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                 },
+                                                                "hoverMessage": {
+                                                                    "type": ["array", "string"],
+                                                                    "title": "hoverMessage",
+                                                                    "description": "A message that should be rendered when hovering over the decoration.",
+                                                                    "items": {
+                                                                        "type": "string",
+                                                                        "title": "line of message"
+                                                                    }
+                                                                },
                                                                 "isWholeLine": {
                                                                     "type": "boolean",
                                                                     "title": "isWholeLine",
@@ -2260,6 +2278,15 @@
                                                                                 "type": "string",
                                                                                 "title": "gutterIconSize",
                                                                                 "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
+                                                                            },
+                                                                            "hoverMessage": {
+                                                                                "type": ["array", "string"],
+                                                                                "title": "hoverMessage",
+                                                                                "description": "A message that should be rendered when hovering over the decoration.",
+                                                                                "items": {
+                                                                                    "type": "string",
+                                                                                    "title": "line of message"
+                                                                                }
                                                                             },
                                                                             "isWholeLine": {
                                                                                 "type": "boolean",
@@ -3080,6 +3107,15 @@
                                                                                             "title": "gutterIconSize",
                                                                                             "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                                         },
+                                                                                        "hoverMessage": {
+                                                                                            "type": ["array", "string"],
+                                                                                            "title": "hoverMessage",
+                                                                                            "description": "A message that should be rendered when hovering over the decoration.",
+                                                                                            "items": {
+                                                                                                "type": "string",
+                                                                                                "title": "line of message"
+                                                                                            }
+                                                                                        },
                                                                                         "isWholeLine": {
                                                                                             "type": "boolean",
                                                                                             "title": "isWholeLine",
@@ -3898,6 +3934,15 @@
                                                                                                         "type": "string",
                                                                                                         "title": "gutterIconSize",
                                                                                                         "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
+                                                                                                    },
+                                                                                                    "hoverMessage": {
+                                                                                                        "type": ["array", "string"],
+                                                                                                        "title": "hoverMessage",
+                                                                                                        "description": "A message that should be rendered when hovering over the decoration.",
+                                                                                                        "items": {
+                                                                                                            "type": "string",
+                                                                                                            "title": "line of message"
+                                                                                                        }
                                                                                                     },
                                                                                                     "isWholeLine": {
                                                                                                         "type": "boolean",

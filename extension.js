@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2022 Mickaël Blet
+Copyright (c) 2022-2024 Mickaël Blet
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -459,9 +459,12 @@ class Parser {
             if (regex.decorations && regex.decorations.length > 0) {
                 for (let decoration of regex.decorations) {
                     let index = (decoration.index) ? decoration.index : 0;
+                    let hoverMessage = (decoration.hoverMessage) ? decoration.hoverMessage : undefined;
                     delete decoration.index;
+                    delete decoration.hoverMessage;
                     decorationList.push({
                         index: index,
+                        hoverMessage: hoverMessage,
                         decoration: this.decorations.length,
                         ranges: []
                     });
@@ -669,7 +672,26 @@ class Parser {
                         let startPosition = editor.document.positionAt(range.start);
                         let endPosition = editor.document.positionAt(range.end);
                         let vsRange = new vscode.Range(startPosition, endPosition);
-                        ranges.push({ range: vsRange });
+                        if (decoration.hoverMessage) {
+                            let htmlHovermessage = new vscode.MarkdownString();
+                            htmlHovermessage.supportHtml = true;
+                            htmlHovermessage.isTrusted = true;
+                            if (typeof decoration.hoverMessage === "string") {
+                                htmlHovermessage.appendMarkdown(decoration.hoverMessage);
+                            }
+                            else {
+                                for (let line of decoration.hoverMessage) {
+                                    htmlHovermessage.appendMarkdown(line);
+                                }
+                            }
+                            ranges.push({
+                                range: vsRange,
+                                hoverMessage: htmlHovermessage
+                            });
+                        }
+                        else {
+                            ranges.push({ range: vsRange });
+                        }
                     }
                     // update decoration
                     countDecoration += decoration.ranges.length;

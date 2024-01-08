@@ -12,8 +12,11 @@ The first objects can take a string list (**languageIds**) and object list (**re
 - **regex**: string of regex
 - **regexFlag**: flag of regex (default "gm")
 - **regexLimit**: limit search of the **regex** property (default 50000)
-- **decorations**: list of [VS Code decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions) (with optionnal **index** property for indicate the index or name of match group of regex)
-- **regexes**: object list of **regexes** (with optionnal **index** property for indicate the index or name of match group of regex)
+- **decorations**: list of [VS Code decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)
+  - Optionnal **index** property for indicate the index or name of match group of regex
+  - Optionnal **hoverMessage** property for add a message or message lines of match group of regex at mouse hover
+- **regexes**: object list of **regexes**
+  - Optionnal **index** property for indicate the index or name of match group of regex
 
 ### Default Regexes Setting
 ```jsonc

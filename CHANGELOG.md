@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 1.1.0: January 08, 2024
+### New Features
+* Property hoverMessage.
+
 ## Version 1.0.0: August 19, 2023
 ### New Features
 * Use name capture group like index.
