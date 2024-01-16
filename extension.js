@@ -25,11 +25,12 @@ const vscode = require("vscode");
 
 class Parser {
 
-    constructor(logger, configuration) {
+    constructor(logger, configuration, regexesConfiguration) {
+        this.active = true;
         this.logger = logger;
         this.regexes = [];
         this.decorations = [];
-        this.loadConfigurations(configuration);
+        this.loadConfigurations(configuration, regexesConfiguration);
     }
 
     //
@@ -37,7 +38,7 @@ class Parser {
     //
 
     // load configuration from contributions
-    loadConfigurations(configuration) {
+    loadConfigurations(configuration, regexesConfiguration) {
         let loadRegexes = (configuration, regex) => {
             // transform 'a(?: )bc(def(ghi)xyz)' to '(a)((?: ))(bc)((def)(ghi)(xyz))'
             let addHiddenMatchGroups = (sRegex) => {
@@ -493,7 +494,7 @@ class Parser {
         this.regexes.length = 0;
         this.decorations.length = 0;
         // load regexes configuration
-        for (let regexList of configuration.regexes) {
+        for (let regexList of regexesConfiguration) {
             // compile regex
             try {
                 // stock languages
@@ -569,7 +570,7 @@ class Parser {
     }
 
     updateDecorations(editor) {
-        if (!editor) {
+        if (!editor || !this.active) {
             return;
         }
         var recurseSearchDecorations = (regex, text, index = 0) => {
@@ -725,6 +726,20 @@ class Parser {
         }
     }
 
+    toggle(visibleTextEditors) {
+        this.active = !this.active;
+        if (this.active) {
+            for (let i = 0; i < visibleTextEditors.length; i++) {
+                this.updateDecorations(visibleTextEditors[i]);
+            }
+        }
+        else {
+            for (let i = 0; i < visibleTextEditors.length; i++) {
+                this.resetDecorations(visibleTextEditors[i]);
+            }
+        }
+    }
+
 }; // class Parser
 
 function activate(context) {
@@ -732,7 +747,36 @@ function activate(context) {
 
     let configuration = vscode.workspace.getConfiguration(nameOfProperties);
     let logger = vscode.window.createOutputChannel("Highlight regex");
-    let parserObj = new Parser(logger, configuration);
+    let parserGlobalObj = new Parser(logger, configuration, configuration.regexes);
+    let parserMachineObj = new Parser(logger, configuration, configuration.machine.regexes);
+    let parserWorkspaceObj = new Parser(logger, configuration, configuration.workspace.regexes);
+
+    context.subscriptions.push(
+        vscode.commands
+            .registerCommand('highlight.regex.toggle', () => {
+                parserGlobalObj.toggle(vscode.window.visibleTextEditors);
+                parserMachineObj.toggle(vscode.window.visibleTextEditors);
+                parserWorkspaceObj.toggle(vscode.window.visibleTextEditors);
+            })
+    );
+    context.subscriptions.push(
+        vscode.commands
+            .registerCommand('highlight.regex.global.toggle', () => {
+                parserGlobalObj.toggle(vscode.window.visibleTextEditors);
+            })
+    );
+    context.subscriptions.push(
+        vscode.commands
+            .registerCommand('highlight.regex.machine.toggle', () => {
+                parserMachineObj.toggle(vscode.window.visibleTextEditors);
+            })
+    );
+    context.subscriptions.push(
+        vscode.commands
+            .registerCommand('highlight.regex.workspace.toggle', () => {
+                parserWorkspaceObj.toggle(vscode.window.visibleTextEditors);
+            })
+    );
 
     let lastVisibleEditors = [];
     let timeoutTimer = [];
@@ -748,9 +792,13 @@ function activate(context) {
         configuration = vscode.workspace.getConfiguration(nameOfProperties);
         let visibleTextEditors = vscode.window.visibleTextEditors;
         for (let i = 0; i < visibleTextEditors.length; i++) {
-            parserObj.resetDecorations(visibleTextEditors[i]);
+            parserGlobalObj.resetDecorations(visibleTextEditors[i]);
+            parserMachineObj.resetDecorations(visibleTextEditors[i]);
+            parserWorkspaceObj.resetDecorations(visibleTextEditors[i]);
         }
-        parserObj.loadConfigurations(configuration);
+        parserGlobalObj.loadConfigurations(configuration, configuration.regexes);
+        parserMachineObj.loadConfigurations(configuration, configuration.machine.regexes);
+        parserWorkspaceObj.loadConfigurations(configuration, configuration.workspace.regexes);
         for (let i = 0; i < visibleTextEditors.length; i++) {
             triggerUpdate(visibleTextEditors[i]);
         }
@@ -785,7 +833,11 @@ function activate(context) {
         if (key in timeoutTimer && timeoutTimer[key]) {
             clearTimeout(timeoutTimer[key]);
         }
-        timeoutTimer[key] = setTimeout(() => { parserObj.updateDecorations(editor) }, configuration.timeout);
+        timeoutTimer[key] = setTimeout(() => {
+            parserGlobalObj.updateDecorations(editor);
+            parserMachineObj.updateDecorations(editor);
+            parserWorkspaceObj.updateDecorations(editor);
+        }, configuration.timeout);
     }
 }
 

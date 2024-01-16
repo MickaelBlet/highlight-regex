@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 1.2.0: January 16, 2024
+### New Features
+* Scope settings `highlight.regex.machine.regexes` and `highlight.regex.workspace.regexes`.
+* Toggle scope commands `highlight.regex.toggle`, `highlight.regex.global.toggle`, `highlight.regex.machine.toggle`, `highlight.regex.workspace.toggle`.
+
 ## Version 1.1.0: January 08, 2024
 ### New Features
 * Property hoverMessage.
@@ -12,7 +17,7 @@
 
 ## Version 0.4.3: April 20, 2023
 ### Update
-* examples.
+* Examples.
 * README.
 
 ## Version 0.4.2: January 26, 2023
