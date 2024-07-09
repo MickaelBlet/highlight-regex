@@ -576,6 +576,7 @@ class Parser {
         var recurseSearchDecorations = (regex, text, index = 0) => {
             let search;
             regex.regexCount = 0;
+            regex.regexRegExp.lastIndex = 0;
             while (search = regex.regexRegExp.exec(text)) {
                 regex.regexCount++;
                 if (regex.regexCount > regex.regexLimit) {
