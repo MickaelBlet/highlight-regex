@@ -457,6 +457,12 @@ class Parser {
             regexRegExp = new RegExp(sRegex, (regex.regexFlag) ? regex.regexFlag : configuration.defaultRegexFlag);
             regexRegExp.test();
             let decorationList = [];
+            let regexList = [];
+            if (regex.regexes && regex.regexes.length > 0) {
+                for (let regexes of regex.regexes) {
+                    regexList.push(loadRegexes(configuration, regexes));
+                }
+            }
             if (regex.decorations && regex.decorations.length > 0) {
                 for (let decoration of regex.decorations) {
                     let index = (decoration.index) ? decoration.index : 0;
@@ -470,12 +476,6 @@ class Parser {
                         ranges: []
                     });
                     this.decorations.push(vscode.window.createTextEditorDecorationType(decoration));
-                }
-            }
-            let regexList = [];
-            if (regex.regexes && regex.regexes.length > 0) {
-                for (let regexes of regex.regexes) {
-                    regexList.push(loadRegexes(configuration, regexes));
                 }
             }
             return {
