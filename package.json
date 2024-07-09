@@ -2,7 +2,7 @@
     "name": "highlight-regex",
     "displayName": "Highlight - Regex",
     "description": "Highlight (decorate) what you want with Regex",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "publisher": "mblet",
     "engines": {
         "vscode": "^0.0.0"
@@ -45,17 +45,17 @@
             "properties": {
                 "highlight.regex.defaultRegexLimit": {
                     "type": "integer",
-                    "description": "Set default limit of search regex",
+                    "description": "Default limit of search regex",
                     "default": 50000
                 },
                 "highlight.regex.defaultRegexFlag": {
                     "type": "string",
-                    "description": "Set default flag of block",
+                    "description": "Default regex flag",
                     "default": "gm"
                 },
                 "highlight.regex.timeout": {
                     "type": "integer",
-                    "description": "Set timeout after applicate decorations",
+                    "description": "Timeout to applicate decorations after events (in milliseconds)",
                     "default": 200
                 },
                 "highlight.regex.regexes": {
@@ -150,7 +150,10 @@
                                     "type": "object",
                                     "properties": {
                                         "index": {
-                                            "type": ["number", "string"],
+                                            "type": [
+                                                "number",
+                                                "string"
+                                            ],
                                             "title": "Index",
                                             "description": "Index or name of regex group"
                                         },
@@ -178,7 +181,10 @@
                                                 "title": "decoration",
                                                 "properties": {
                                                     "index": {
-                                                        "type": ["number", "string"],
+                                                        "type": [
+                                                            "number",
+                                                            "string"
+                                                        ],
                                                         "title": "index",
                                                         "description": "Index or name of regex group"
                                                     },
@@ -643,7 +649,10 @@
                                                         "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                     },
                                                     "hoverMessage": {
-                                                        "type": ["array", "string"],
+                                                        "type": [
+                                                            "array",
+                                                            "string"
+                                                        ],
                                                         "title": "hoverMessage",
                                                         "description": "A message that should be rendered when hovering over the decoration.",
                                                         "items": {
@@ -978,7 +987,10 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "index": {
-                                                        "type": ["number", "string"],
+                                                        "type": [
+                                                            "number",
+                                                            "string"
+                                                        ],
                                                         "title": "Index",
                                                         "description": "Index or name of regex group"
                                                     },
@@ -1006,7 +1018,10 @@
                                                             "title": "decoration",
                                                             "properties": {
                                                                 "index": {
-                                                                    "type": ["number", "string"],
+                                                                    "type": [
+                                                                        "number",
+                                                                        "string"
+                                                                    ],
                                                                     "title": "index",
                                                                     "description": "Index or name of regex group"
                                                                 },
@@ -1471,7 +1486,10 @@
                                                                     "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                 },
                                                                 "hoverMessage": {
-                                                                    "type": ["array", "string"],
+                                                                    "type": [
+                                                                        "array",
+                                                                        "string"
+                                                                    ],
                                                                     "title": "hoverMessage",
                                                                     "description": "A message that should be rendered when hovering over the decoration.",
                                                                     "items": {
@@ -1806,7 +1824,10 @@
                                                             "type": "object",
                                                             "properties": {
                                                                 "index": {
-                                                                    "type": ["number", "string"],
+                                                                    "type": [
+                                                                        "number",
+                                                                        "string"
+                                                                    ],
                                                                     "title": "Index",
                                                                     "description": "Index or name of regex group"
                                                                 },
@@ -1834,7 +1855,10 @@
                                                                         "title": "decoration",
                                                                         "properties": {
                                                                             "index": {
-                                                                                "type": ["number", "string"],
+                                                                                "type": [
+                                                                                    "number",
+                                                                                    "string"
+                                                                                ],
                                                                                 "title": "index",
                                                                                 "description": "Index or name of regex group"
                                                                             },
@@ -2299,7 +2323,10 @@
                                                                                 "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                             },
                                                                             "hoverMessage": {
-                                                                                "type": ["array", "string"],
+                                                                                "type": [
+                                                                                    "array",
+                                                                                    "string"
+                                                                                ],
                                                                                 "title": "hoverMessage",
                                                                                 "description": "A message that should be rendered when hovering over the decoration.",
                                                                                 "items": {
@@ -2634,7 +2661,10 @@
                                                                         "type": "object",
                                                                         "properties": {
                                                                             "index": {
-                                                                                "type": ["number", "string"],
+                                                                                "type": [
+                                                                                    "number",
+                                                                                    "string"
+                                                                                ],
                                                                                 "title": "Index",
                                                                                 "description": "Index or name of regex group"
                                                                             },
@@ -2662,7 +2692,10 @@
                                                                                     "title": "decoration",
                                                                                     "properties": {
                                                                                         "index": {
-                                                                                            "type": ["number", "string"],
+                                                                                            "type": [
+                                                                                                "number",
+                                                                                                "string"
+                                                                                            ],
                                                                                             "title": "index",
                                                                                             "description": "Index or name of regex group"
                                                                                         },
@@ -3127,7 +3160,10 @@
                                                                                             "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                                         },
                                                                                         "hoverMessage": {
-                                                                                            "type": ["array", "string"],
+                                                                                            "type": [
+                                                                                                "array",
+                                                                                                "string"
+                                                                                            ],
                                                                                             "title": "hoverMessage",
                                                                                             "description": "A message that should be rendered when hovering over the decoration.",
                                                                                             "items": {
@@ -3462,7 +3498,10 @@
                                                                                     "type": "object",
                                                                                     "properties": {
                                                                                         "index": {
-                                                                                            "type": ["number", "string"],
+                                                                                            "type": [
+                                                                                                "number",
+                                                                                                "string"
+                                                                                            ],
                                                                                             "title": "Index",
                                                                                             "description": "Index or name of regex group"
                                                                                         },
@@ -3490,7 +3529,10 @@
                                                                                                 "title": "decoration",
                                                                                                 "properties": {
                                                                                                     "index": {
-                                                                                                        "type": ["number", "string"],
+                                                                                                        "type": [
+                                                                                                            "number",
+                                                                                                            "string"
+                                                                                                        ],
                                                                                                         "title": "index",
                                                                                                         "description": "Index or name of regex group"
                                                                                                     },
@@ -3955,7 +3997,10 @@
                                                                                                         "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                                                     },
                                                                                                     "hoverMessage": {
-                                                                                                        "type": ["array", "string"],
+                                                                                                        "type": [
+                                                                                                            "array",
+                                                                                                            "string"
+                                                                                                        ],
                                                                                                         "title": "hoverMessage",
                                                                                                         "description": "A message that should be rendered when hovering over the decoration.",
                                                                                                         "items": {
@@ -4290,7 +4335,10 @@
                                                                                                 "type": "object",
                                                                                                 "properties": {
                                                                                                     "index": {
-                                                                                                        "type": ["number", "string"],
+                                                                                                        "type": [
+                                                                                                            "number",
+                                                                                                            "string"
+                                                                                                        ],
                                                                                                         "title": "Index",
                                                                                                         "description": "Index or name of regex group"
                                                                                                     },
@@ -4335,7 +4383,7 @@
                     "default": [],
                     "type": "array",
                     "title": "Regexes",
-                    "markdownDescription": "Set search regex with decoration\n\nDefault setting at [Marketplace extension](https://marketplace.visualstudio.com/items?itemName=mblet.highlight-regex#default-regexes-setting)\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
+                    "markdownDescription": "Set search regex with decoration for host\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
                     "items": {
                         "type": "object",
                         "title": "Regexes",
@@ -4358,7 +4406,10 @@
                                     "type": "object",
                                     "properties": {
                                         "index": {
-                                            "type": ["number", "string"],
+                                            "type": [
+                                                "number",
+                                                "string"
+                                            ],
                                             "title": "Index",
                                             "description": "Index or name of regex group"
                                         },
@@ -4386,7 +4437,10 @@
                                                 "title": "decoration",
                                                 "properties": {
                                                     "index": {
-                                                        "type": ["number", "string"],
+                                                        "type": [
+                                                            "number",
+                                                            "string"
+                                                        ],
                                                         "title": "index",
                                                         "description": "Index or name of regex group"
                                                     },
@@ -4851,7 +4905,10 @@
                                                         "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                     },
                                                     "hoverMessage": {
-                                                        "type": ["array", "string"],
+                                                        "type": [
+                                                            "array",
+                                                            "string"
+                                                        ],
                                                         "title": "hoverMessage",
                                                         "description": "A message that should be rendered when hovering over the decoration.",
                                                         "items": {
@@ -5186,7 +5243,10 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "index": {
-                                                        "type": ["number", "string"],
+                                                        "type": [
+                                                            "number",
+                                                            "string"
+                                                        ],
                                                         "title": "Index",
                                                         "description": "Index or name of regex group"
                                                     },
@@ -5214,7 +5274,10 @@
                                                             "title": "decoration",
                                                             "properties": {
                                                                 "index": {
-                                                                    "type": ["number", "string"],
+                                                                    "type": [
+                                                                        "number",
+                                                                        "string"
+                                                                    ],
                                                                     "title": "index",
                                                                     "description": "Index or name of regex group"
                                                                 },
@@ -5679,7 +5742,10 @@
                                                                     "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                 },
                                                                 "hoverMessage": {
-                                                                    "type": ["array", "string"],
+                                                                    "type": [
+                                                                        "array",
+                                                                        "string"
+                                                                    ],
                                                                     "title": "hoverMessage",
                                                                     "description": "A message that should be rendered when hovering over the decoration.",
                                                                     "items": {
@@ -6014,7 +6080,10 @@
                                                             "type": "object",
                                                             "properties": {
                                                                 "index": {
-                                                                    "type": ["number", "string"],
+                                                                    "type": [
+                                                                        "number",
+                                                                        "string"
+                                                                    ],
                                                                     "title": "Index",
                                                                     "description": "Index or name of regex group"
                                                                 },
@@ -6042,7 +6111,10 @@
                                                                         "title": "decoration",
                                                                         "properties": {
                                                                             "index": {
-                                                                                "type": ["number", "string"],
+                                                                                "type": [
+                                                                                    "number",
+                                                                                    "string"
+                                                                                ],
                                                                                 "title": "index",
                                                                                 "description": "Index or name of regex group"
                                                                             },
@@ -6507,7 +6579,10 @@
                                                                                 "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                             },
                                                                             "hoverMessage": {
-                                                                                "type": ["array", "string"],
+                                                                                "type": [
+                                                                                    "array",
+                                                                                    "string"
+                                                                                ],
                                                                                 "title": "hoverMessage",
                                                                                 "description": "A message that should be rendered when hovering over the decoration.",
                                                                                 "items": {
@@ -6842,7 +6917,10 @@
                                                                         "type": "object",
                                                                         "properties": {
                                                                             "index": {
-                                                                                "type": ["number", "string"],
+                                                                                "type": [
+                                                                                    "number",
+                                                                                    "string"
+                                                                                ],
                                                                                 "title": "Index",
                                                                                 "description": "Index or name of regex group"
                                                                             },
@@ -6870,7 +6948,10 @@
                                                                                     "title": "decoration",
                                                                                     "properties": {
                                                                                         "index": {
-                                                                                            "type": ["number", "string"],
+                                                                                            "type": [
+                                                                                                "number",
+                                                                                                "string"
+                                                                                            ],
                                                                                             "title": "index",
                                                                                             "description": "Index or name of regex group"
                                                                                         },
@@ -7335,7 +7416,10 @@
                                                                                             "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                                         },
                                                                                         "hoverMessage": {
-                                                                                            "type": ["array", "string"],
+                                                                                            "type": [
+                                                                                                "array",
+                                                                                                "string"
+                                                                                            ],
                                                                                             "title": "hoverMessage",
                                                                                             "description": "A message that should be rendered when hovering over the decoration.",
                                                                                             "items": {
@@ -7670,7 +7754,10 @@
                                                                                     "type": "object",
                                                                                     "properties": {
                                                                                         "index": {
-                                                                                            "type": ["number", "string"],
+                                                                                            "type": [
+                                                                                                "number",
+                                                                                                "string"
+                                                                                            ],
                                                                                             "title": "Index",
                                                                                             "description": "Index or name of regex group"
                                                                                         },
@@ -7698,7 +7785,10 @@
                                                                                                 "title": "decoration",
                                                                                                 "properties": {
                                                                                                     "index": {
-                                                                                                        "type": ["number", "string"],
+                                                                                                        "type": [
+                                                                                                            "number",
+                                                                                                            "string"
+                                                                                                        ],
                                                                                                         "title": "index",
                                                                                                         "description": "Index or name of regex group"
                                                                                                     },
@@ -8163,7 +8253,10 @@
                                                                                                         "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                                                     },
                                                                                                     "hoverMessage": {
-                                                                                                        "type": ["array", "string"],
+                                                                                                        "type": [
+                                                                                                            "array",
+                                                                                                            "string"
+                                                                                                        ],
                                                                                                         "title": "hoverMessage",
                                                                                                         "description": "A message that should be rendered when hovering over the decoration.",
                                                                                                         "items": {
@@ -8498,7 +8591,10 @@
                                                                                                 "type": "object",
                                                                                                 "properties": {
                                                                                                     "index": {
-                                                                                                        "type": ["number", "string"],
+                                                                                                        "type": [
+                                                                                                            "number",
+                                                                                                            "string"
+                                                                                                        ],
                                                                                                         "title": "Index",
                                                                                                         "description": "Index or name of regex group"
                                                                                                     },
@@ -8543,7 +8639,7 @@
                     "default": [],
                     "type": "array",
                     "title": "Regexes",
-                    "markdownDescription": "Set search regex with decoration\n\nDefault setting at [Marketplace extension](https://marketplace.visualstudio.com/items?itemName=mblet.highlight-regex#default-regexes-setting)\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
+                    "markdownDescription": "Set search regex with decoration for workspace\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
                     "items": {
                         "type": "object",
                         "title": "Regexes",
@@ -8566,7 +8662,10 @@
                                     "type": "object",
                                     "properties": {
                                         "index": {
-                                            "type": ["number", "string"],
+                                            "type": [
+                                                "number",
+                                                "string"
+                                            ],
                                             "title": "Index",
                                             "description": "Index or name of regex group"
                                         },
@@ -8594,7 +8693,10 @@
                                                 "title": "decoration",
                                                 "properties": {
                                                     "index": {
-                                                        "type": ["number", "string"],
+                                                        "type": [
+                                                            "number",
+                                                            "string"
+                                                        ],
                                                         "title": "index",
                                                         "description": "Index or name of regex group"
                                                     },
@@ -9059,7 +9161,10 @@
                                                         "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                     },
                                                     "hoverMessage": {
-                                                        "type": ["array", "string"],
+                                                        "type": [
+                                                            "array",
+                                                            "string"
+                                                        ],
                                                         "title": "hoverMessage",
                                                         "description": "A message that should be rendered when hovering over the decoration.",
                                                         "items": {
@@ -9394,7 +9499,10 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "index": {
-                                                        "type": ["number", "string"],
+                                                        "type": [
+                                                            "number",
+                                                            "string"
+                                                        ],
                                                         "title": "Index",
                                                         "description": "Index or name of regex group"
                                                     },
@@ -9422,7 +9530,10 @@
                                                             "title": "decoration",
                                                             "properties": {
                                                                 "index": {
-                                                                    "type": ["number", "string"],
+                                                                    "type": [
+                                                                        "number",
+                                                                        "string"
+                                                                    ],
                                                                     "title": "index",
                                                                     "description": "Index or name of regex group"
                                                                 },
@@ -9887,7 +9998,10 @@
                                                                     "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                 },
                                                                 "hoverMessage": {
-                                                                    "type": ["array", "string"],
+                                                                    "type": [
+                                                                        "array",
+                                                                        "string"
+                                                                    ],
                                                                     "title": "hoverMessage",
                                                                     "description": "A message that should be rendered when hovering over the decoration.",
                                                                     "items": {
@@ -10222,7 +10336,10 @@
                                                             "type": "object",
                                                             "properties": {
                                                                 "index": {
-                                                                    "type": ["number", "string"],
+                                                                    "type": [
+                                                                        "number",
+                                                                        "string"
+                                                                    ],
                                                                     "title": "Index",
                                                                     "description": "Index or name of regex group"
                                                                 },
@@ -10250,7 +10367,10 @@
                                                                         "title": "decoration",
                                                                         "properties": {
                                                                             "index": {
-                                                                                "type": ["number", "string"],
+                                                                                "type": [
+                                                                                    "number",
+                                                                                    "string"
+                                                                                ],
                                                                                 "title": "index",
                                                                                 "description": "Index or name of regex group"
                                                                             },
@@ -10715,7 +10835,10 @@
                                                                                 "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                             },
                                                                             "hoverMessage": {
-                                                                                "type": ["array", "string"],
+                                                                                "type": [
+                                                                                    "array",
+                                                                                    "string"
+                                                                                ],
                                                                                 "title": "hoverMessage",
                                                                                 "description": "A message that should be rendered when hovering over the decoration.",
                                                                                 "items": {
@@ -11050,7 +11173,10 @@
                                                                         "type": "object",
                                                                         "properties": {
                                                                             "index": {
-                                                                                "type": ["number", "string"],
+                                                                                "type": [
+                                                                                    "number",
+                                                                                    "string"
+                                                                                ],
                                                                                 "title": "Index",
                                                                                 "description": "Index or name of regex group"
                                                                             },
@@ -11078,7 +11204,10 @@
                                                                                     "title": "decoration",
                                                                                     "properties": {
                                                                                         "index": {
-                                                                                            "type": ["number", "string"],
+                                                                                            "type": [
+                                                                                                "number",
+                                                                                                "string"
+                                                                                            ],
                                                                                             "title": "index",
                                                                                             "description": "Index or name of regex group"
                                                                                         },
@@ -11543,7 +11672,10 @@
                                                                                             "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                                         },
                                                                                         "hoverMessage": {
-                                                                                            "type": ["array", "string"],
+                                                                                            "type": [
+                                                                                                "array",
+                                                                                                "string"
+                                                                                            ],
                                                                                             "title": "hoverMessage",
                                                                                             "description": "A message that should be rendered when hovering over the decoration.",
                                                                                             "items": {
@@ -11878,7 +12010,10 @@
                                                                                     "type": "object",
                                                                                     "properties": {
                                                                                         "index": {
-                                                                                            "type": ["number", "string"],
+                                                                                            "type": [
+                                                                                                "number",
+                                                                                                "string"
+                                                                                            ],
                                                                                             "title": "Index",
                                                                                             "description": "Index or name of regex group"
                                                                                         },
@@ -11906,7 +12041,10 @@
                                                                                                 "title": "decoration",
                                                                                                 "properties": {
                                                                                                     "index": {
-                                                                                                        "type": ["number", "string"],
+                                                                                                        "type": [
+                                                                                                            "number",
+                                                                                                            "string"
+                                                                                                        ],
                                                                                                         "title": "index",
                                                                                                         "description": "Index or name of regex group"
                                                                                                     },
@@ -12371,7 +12509,10 @@
                                                                                                         "description": "Specifies the size of the gutter icon. Available values are 'auto', 'contain', 'cover' and any percentage value."
                                                                                                     },
                                                                                                     "hoverMessage": {
-                                                                                                        "type": ["array", "string"],
+                                                                                                        "type": [
+                                                                                                            "array",
+                                                                                                            "string"
+                                                                                                        ],
                                                                                                         "title": "hoverMessage",
                                                                                                         "description": "A message that should be rendered when hovering over the decoration.",
                                                                                                         "items": {
@@ -12706,7 +12847,10 @@
                                                                                                 "type": "object",
                                                                                                 "properties": {
                                                                                                     "index": {
-                                                                                                        "type": ["number", "string"],
+                                                                                                        "type": [
+                                                                                                            "number",
+                                                                                                            "string"
+                                                                                                        ],
                                                                                                         "title": "Index",
                                                                                                         "description": "Index or name of regex group"
                                                                                                     },

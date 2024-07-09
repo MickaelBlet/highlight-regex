@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 1.2.1: July 10, 2024
+### Fix
+* Gave nested regexes higher priority on decorations.
+* Reset limit regex each search.
+
 ## Version 1.2.0: January 16, 2024
 ### New Features
 * Scope settings `highlight.regex.machine.regexes` and `highlight.regex.workspace.regexes`.
