@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 1.2.2: July 11, 2024
+### Update
+* README: Demo gif.
+
 ## Version 1.2.1: July 10, 2024
 ### Fix
 * Gave nested regexes higher priority on decorations.

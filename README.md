@@ -2,6 +2,8 @@
 
 Highlight (*decorate*) what you want with Regex in VS Code
 
+![demo](images/demo.gif)
+
 **Examples** at [examples.md](examples.md)
 
 ## Regexes Settings
