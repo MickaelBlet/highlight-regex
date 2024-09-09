@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 1.3.0: September 9, 2024
+### New Features
+* Cache decorations.
+* Cache limit setting `highlight.regex.cacheLimit`.
+
 ## Version 1.2.2: July 11, 2024
 ### Update
 * README: Demo gif.

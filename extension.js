@@ -27,9 +27,12 @@ class Parser {
 
     constructor(logger, configuration, regexesConfiguration) {
         this.active = true;
+        this.cacheEditorLimit = 0;
         this.logger = logger;
         this.regexes = [];
         this.decorations = [];
+        this.cacheEditors = [];
+        this.cacheEditorList = [];
         this.loadConfigurations(configuration, regexesConfiguration);
     }
 
@@ -493,6 +496,7 @@ class Parser {
         // reset regex
         this.regexes.length = 0;
         this.decorations.length = 0;
+        this.cacheEditorLimit = configuration.cacheLimit;
         // load regexes configuration
         for (let regexList of regexesConfiguration) {
             // compile regex
@@ -535,9 +539,6 @@ class Parser {
         if (!activeEditor) {
             return;
         }
-        if (activeEditor.document.uri.scheme == "output") {
-            return;
-        }
         let recurseResetDecorations = (regex) => {
             if (regex === undefined) {
                 return;
@@ -573,6 +574,17 @@ class Parser {
         if (!editor || !this.active) {
             return;
         }
+        let key = editor.document.uri.toString(true);
+        if (!(key in this.cacheEditors)) {
+            if (this.cacheEditorList.length > this.cacheEditorLimit) {
+                let firstCacheEditor = this.cacheEditorList.shift();
+                if (firstCacheEditor) {
+                    delete this.cacheEditors[firstCacheEditor];
+                }
+            }
+            this.cacheEditorList.push(key);
+        }
+        this.cacheEditors[key] = []
         var recurseSearchDecorations = (regex, text, index = 0) => {
             let search;
             regex.regexCount = 0;
@@ -668,6 +680,9 @@ class Parser {
             }
             if (regex.decorations && regex.decorations.length > 0) {
                 for (let decoration of regex.decorations) {
+                    if (decoration.decoration === undefined) {
+                        continue;
+                    }
                     // create range
                     let ranges = [];
                     for (let range of decoration.ranges) {
@@ -697,12 +712,15 @@ class Parser {
                     }
                     // update decoration
                     countDecoration += decoration.ranges.length;
+                    this.cacheEditors[key].push({
+                        decoration: this.decorations[decoration.decoration],
+                        ranges: ranges
+                    });
                     editor.setDecorations(
                         this.decorations[decoration.decoration],
                         ranges
                     );
                     decoration.ranges.length = 0;
-                    ranges.length = 0;
                 }
             }
             if (regex.regexes && regex.regexes.length > 0) {
@@ -718,7 +736,44 @@ class Parser {
                 }
             }
             if (countDecoration > 0) {
-                this.log("Update decorations at \"" + editor.document.fileName + "\" in " + (Date.now() - startTime) + "ms with " + (countDecoration) + " occurence(s)")
+                this.log("Update decorations at \"" + editor.document.fileName + "\" in " + (Date.now() - startTime) + "ms with " + (countDecoration) + " occurence(s)");
+            }
+        }
+        catch (error) {
+            console.error(error);
+            this.log(error);
+        }
+    }
+
+    cacheDecorations(editor) {
+        if (!editor || !this.active) {
+            return;
+        }
+        try {
+            let startTime = Date.now();
+            let key = editor.document.uri.toString(true);
+            if (key in this.cacheEditors && this.cacheEditors[key]) {
+                // move key to the end of cached list
+                this.cacheEditorList.splice(this.cacheEditorList.indexOf(key), 1);
+                this.cacheEditorList.push(key);
+
+                let countDecoration = 0;
+                for (let decoration of this.cacheEditors[key]) {
+                    if (decoration.decoration === undefined) {
+                        continue;
+                    }
+                    editor.setDecorations(
+                        decoration.decoration,
+                        decoration.ranges
+                    );
+                    countDecoration += decoration.ranges.length;
+                }
+                if (countDecoration > 0) {
+                    this.log("Cached decorations at \"" + editor.document.fileName + "\" in " + (Date.now() - startTime) + "ms with " + (countDecoration) + " occurence(s)");
+                }
+            }
+            else {
+                this.updateDecorations(editor);
             }
         }
         catch (error) {
@@ -731,7 +786,7 @@ class Parser {
         this.active = !this.active;
         if (this.active) {
             for (let i = 0; i < visibleTextEditors.length; i++) {
-                this.updateDecorations(visibleTextEditors[i]);
+                this.cacheDecorations(visibleTextEditors[i]);
             }
         }
         else {
@@ -812,7 +867,7 @@ function activate(context) {
             let key = visibleTextEditors[i].document.uri.toString(true) + visibleTextEditors[i].viewColumn;
             newVisibleEditors[key] = true;
             if (!(key in lastVisibleEditors)) {
-                triggerUpdate(visibleTextEditors[i]);
+                triggerUpdate(visibleTextEditors[i], false);
             }
         }
         lastVisibleEditors = newVisibleEditors;
@@ -829,16 +884,25 @@ function activate(context) {
     });
 
     // trigger call update decoration
-    function triggerUpdate(editor) {
+    function triggerUpdate(editor, update = true) {
         let key = editor.document.uri.toString(true) + editor.viewColumn;
         if (key in timeoutTimer && timeoutTimer[key]) {
             clearTimeout(timeoutTimer[key]);
         }
-        timeoutTimer[key] = setTimeout(() => {
-            parserGlobalObj.updateDecorations(editor);
-            parserMachineObj.updateDecorations(editor);
-            parserWorkspaceObj.updateDecorations(editor);
-        }, configuration.timeout);
+        if (update) {
+            timeoutTimer[key] = setTimeout(() => {
+                parserGlobalObj.updateDecorations(editor);
+                parserMachineObj.updateDecorations(editor);
+                parserWorkspaceObj.updateDecorations(editor);
+            }, configuration.timeout);
+        }
+        else {
+            timeoutTimer[key] = setTimeout(() => {
+                parserGlobalObj.cacheDecorations(editor);
+                parserMachineObj.cacheDecorations(editor);
+                parserWorkspaceObj.cacheDecorations(editor);
+            }, configuration.timeout);
+        }
     }
 }
 
