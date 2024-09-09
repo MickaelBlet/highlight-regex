@@ -571,10 +571,18 @@ class Parser {
     }
 
     updateDecorations(editor) {
-        if (!editor || !this.active) {
+        if (!editor) {
             return;
         }
         let key = editor.document.uri.toString(true);
+        if (!this.active) {
+            if (key in this.cacheEditors) {
+                delete this.cacheEditors[key];
+                // remove element on cache editor list
+                this.cacheEditorList.splice(this.cacheEditorList.indexOf(key), 1);
+            }
+            return;
+        }
         if (!(key in this.cacheEditors)) {
             if (this.cacheEditorList.length > this.cacheEditorLimit) {
                 let firstCacheEditor = this.cacheEditorList.shift();

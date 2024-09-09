@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 1.3.1: September 9, 2024
+### Fix
+* Cache with toggle command.
+
 ## Version 1.3.0: September 9, 2024
 ### New Features
 * Cache decorations.
