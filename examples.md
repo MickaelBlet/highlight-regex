@@ -39,7 +39,7 @@
         "languageIds": [ "plaintext" ],
         "regexes": [
             {
-                "regex": "simple (?<example>example) with (groups)",
+                "regex": "simple (?<example>example) with (?<groups>groups)",
                 "regexFlag": "gmi",
                 "regexLimit": 10000,
                 "decorations": [
@@ -53,7 +53,7 @@
                         ]
                     },
                     {
-                        "index": 2, // groups
+                        "index": "groups",
                         "color": "#0FF"
                     }
                 ]
@@ -74,12 +74,28 @@
         "languageIds": [ "c", "cpp" ],
         "regexes": [
             {
-                "regex": "(?:['][^]*?(?:(?<!(?<!\\\\)\\\\)['])|[\"][^]*?(?:(?<!\\\\)[\"])|\\/\\*[^]*?\\*\\/|//[^]*?(?:(?<!\\\\)$)|#[^]*?(?:(?<!\\\\)$))|(?<var>\\b(?!__)_\\w+\\b)|(?<this>\\bthis\\b)", // not in string or comment or define
+                "regex": [
+                    "(?:",
+                        "['][^]*?(?:(?<!(?<!\\\\)\\\\)['])",
+                        "|",
+                        "[\"][^]*?(?:(?<!\\\\)[\"])",
+                        "|",
+                        "\\/\\*[^]*?\\*\\/",
+                        "|",
+                        "//[^]*?(?:(?<!\\\\)$)",
+                        "|",
+                        "#[^]*?(?:(?<!\\\\)$)",
+                    ")",
+                    "|",
+                    "(?<var>\\b\\w+_(?<!__+)\\b)",
+                    "|",
+                    "(?<this>\\bthis\\b)"
+                ], // not in string or comment or define
                 "regexFlag": "gm",
                 "regexLimit": 10000,
                 "decorations": [
                     {
-                        "index": "var", // _\w+
+                        "index": "var", // \w+_
                         "fontWeight": "bold; text-shadow: 0px 0px 10px",
                         "fontStyle": "italic"
                     },
@@ -99,7 +115,7 @@
   <img src="images/memberVariableThis.drawio.png" >
 </p>
 
-## Todo and Tada for python
+## Todo and Critical for python
 ```jsonc
 "highlight.regex.regexes": [
     {
@@ -111,7 +127,7 @@
                 "regexes": [
                     {
                         "index": 0,
-                        "regex": "(\\bTODO\\b)|(\\bTADA\\b)",
+                        "regex": "(\\bTODO\\b)|(\\bCRITICAL\\b)",
                         "regexFlag": "gmi",
                         "decorations": [
                             {
@@ -157,7 +173,7 @@
 ]
 ```
 <p align="center">
-  <img src="images/pythonTodoTada.drawio.png" >
+  <img src="images/pythonTodoCritical.drawio.png" >
 </p>
 
 ## CMake variable in string
@@ -167,7 +183,15 @@
         "languageIds": ["cmake"],
         "regexes": [
             {
-                "regex": "(?:#\\[\\[[^]*?\\]\\]|#[^]*?(?:(?<!\\\\)$))|(?<string>\"[^]*?(?:(?<!\\\\))\")",
+                "regex": [
+                    "(?:",
+                        "#\\[\\[[^]*?\\]\\]",
+                        "|",
+                        "#[^]*?(?:(?<!\\\\)$))",
+                        "|",
+                        "(?<string>\"[^]*?(?:(?<!\\\\))\"",
+                    ")"
+                ],
                 "regexFlag": "gm",
                 "regexes": [
                     {

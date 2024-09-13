@@ -1,5 +1,18 @@
 # Change Log
 
+## Version 1.4.0: September 16, 2024
+### Update
+* Rename `highlight.regex.timeout` setting to `highlight.regex.delay`.
+* Remove delay at change visibility event.
+* `regex` setting accept array of strings.
+* Examples.
+* README.
+### New Features
+* Use vscode log in output channel.
+* Add `languageRegex` setting in `regexes` object.
+* Add `filenameRegex` setting in `regexes` object.
+* Add automatic `z-index` level css for background.
+
 ## Version 1.3.1: September 9, 2024
 ### Fix
 * Cache with toggle command.

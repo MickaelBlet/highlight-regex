@@ -1,7 +1,0 @@
-// todo TADA
-
-/*
- * TODO
- *
- * tada
- */
