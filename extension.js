@@ -493,10 +493,10 @@ class Parser {
 		}
 		// reset regex
 		this.regexes.length = 0;
-        if (this.decorations.length > 0) {
-            this.decorations.splice(0, this.decorations.length);
-            this.decorations.length = 0;
-        }
+		if (this.decorations.length > 0) {
+			this.decorations.splice(0, this.decorations.length);
+			this.decorations.length = 0;
+		}
 		this.cacheEditorLimit = configuration.cacheLimit;
 		// load regexes configuration
 		for (let regexList of regexesConfiguration) {
@@ -698,16 +698,24 @@ class Parser {
 
 		try {
 			let countDecoration = 0;
-			for (let decoration in decorations) {
-				countDecoration += decorations[decoration].length;
-				this.cacheEditors[key].push({
-					decoration: this.decorations[decoration],
-					ranges: decorations[decoration]
-				});
-				editor.setDecorations(
-					this.decorations[decoration],
-					decorations[decoration]
-				);
+			for (let decoration in this.decorations) {
+				if (decoration in decorations) {
+					countDecoration += decorations[decoration].length;
+					this.cacheEditors[key].push({
+						decoration: this.decorations[decoration],
+						ranges: decorations[decoration]
+					});
+					editor.setDecorations(
+						this.decorations[decoration],
+						decorations[decoration]
+					);
+				}
+				else {
+					editor.setDecorations(
+						this.decorations[decoration],
+						[]
+					);
+				}
 			}
 			if (countDecoration > 0) {
 				this.logger.info(this.name + ": Update decorations at \"" + editor.document.fileName + "\" in " + (Date.now() - startTime) + " millisecond(s) with " + (countDecoration) + " occurence(s)");

@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 1.4.1: September 18, 2024
+### Fix
+* Old decorations at update event.
+
 ## Version 1.4.0: September 16, 2024
 ### Update
 * Rename `highlight.regex.timeout` setting to `highlight.regex.delay`.
