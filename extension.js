@@ -452,8 +452,8 @@ class Parser {
 				regex.decorations.sort((a, b) => {
 					let keyA = (a.index) ? a.index : 0;
 					let keyB = (b.index) ? b.index : 0;
-					if (keyA < keyB) return -1;
-					if (keyA > keyB) return 1;
+					if (keyA < keyB) return 1;
+					if (keyA > keyB) return -1;
 					return 0;
 				});
 				for (let decoration of regex.decorations) {
@@ -464,10 +464,10 @@ class Parser {
 					}
 					// z-index for background level
 					if (decoration.backgroundColor) {
-						decoration.backgroundColor += "; z-index: " + ((-1 * (100 - regexLevel)) + index)
+						decoration.backgroundColor += "; z-index: " + ((-100 * (10 - regexLevel)) + index)
 					}
 					else {
-						decoration.backgroundColor = "transparent; z-index: " + ((-1 * (100 - regexLevel)) + index)
+						decoration.backgroundColor = "transparent; z-index: " + ((-100 * (10 - regexLevel)) + index)
 					}
 					delete decoration.index;
 					delete decoration.hoverMessage;
