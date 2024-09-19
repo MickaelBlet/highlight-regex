@@ -569,7 +569,10 @@ class Parser {
 			this.cacheEditorList.push(key);
 		}
 		this.cacheEditors[key] = [];
-		let decorations = [];
+		let cacheRanges = [];
+		for (const _ in this.decorations) {
+			cacheRanges.push([]);
+		}
 		var recurseSearchDecorations = (regex, text, index = 0) => {
 			let search;
 			regex.regexCount = 0;
@@ -605,9 +608,6 @@ class Parser {
 									decorationIndex += search[regex.matchDependIndexes[decorationRealIndex][j]].length;
 								}
 							}
-							if (!(decoration.decoration in decorations)) {
-								decorations[decoration.decoration] = [];
-							}
 							let vsRange = new vscode.Range(
 								editor.document.positionAt(index + decorationIndex),
 								editor.document.positionAt(index + decorationIndex + search[decorationRealIndex].length)
@@ -617,13 +617,13 @@ class Parser {
 								htmlHovermessage.supportHtml = true;
 								htmlHovermessage.isTrusted = true;
 								htmlHovermessage.appendMarkdown(decoration.hoverMessage);
-								decorations[decoration.decoration].push({
+								cacheRanges[decoration.decoration].push({
 									range: vsRange,
 									hoverMessage: htmlHovermessage
 								});
 							}
 							else {
-								decorations[decoration.decoration].push({
+								cacheRanges[decoration.decoration].push({
 									range: vsRange
 								});
 							}
@@ -698,28 +698,17 @@ class Parser {
 
 		try {
 			let countDecoration = 0;
-			for (let decoration in this.decorations) {
-				if (decoration in decorations) {
-					countDecoration += decorations[decoration].length;
-					this.cacheEditors[key].push({
-						decoration: this.decorations[decoration],
-						ranges: decorations[decoration]
-					});
-					editor.setDecorations(
-						this.decorations[decoration],
-						decorations[decoration]
-					);
-				}
-				else {
-					editor.setDecorations(
-						this.decorations[decoration],
-						[]
-					);
-				}
+			for (const decorationIndex in cacheRanges) {
+				countDecoration += cacheRanges[decorationIndex].length;
+				editor.setDecorations(
+					this.decorations[decorationIndex],
+					cacheRanges[decorationIndex]
+				);
 			}
 			if (countDecoration > 0) {
 				this.logger.info(this.name + ": Update decorations at \"" + editor.document.fileName + "\" in " + (Date.now() - startTime) + " millisecond(s) with " + (countDecoration) + " occurence(s)");
 			}
+			this.cacheEditors[key] = cacheRanges;
 		}
 		catch (error) {
 			console.error(this.name + ": " + error);
@@ -740,15 +729,13 @@ class Parser {
 				this.cacheEditorList.push(key);
 
 				let countDecoration = 0;
-				for (let decoration of this.cacheEditors[key]) {
-					if (decoration.decoration === undefined) {
-						continue;
-					}
+				const cacheRanges = this.cacheEditors[key];
+				for (const decorationIndex in cacheRanges) {
+					countDecoration += cacheRanges[decorationIndex].length;
 					editor.setDecorations(
-						decoration.decoration,
-						decoration.ranges
+						this.decorations[decorationIndex],
+						cacheRanges[decorationIndex]
 					);
-					countDecoration += decoration.ranges.length;
 				}
 				if (countDecoration > 0) {
 					this.logger.info(this.name + ": Cached decorations at \"" + editor.document.fileName + "\" in " + (Date.now() - startTime) + " millisecond(s) with " + (countDecoration) + " occurence(s)");

@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 1.4.3: September 18, 2024
+### Fix
+* Decorations artifacts.
+
 ## Version 1.4.2: September 18, 2024
 ### Fix
 * Order of decoration index.
