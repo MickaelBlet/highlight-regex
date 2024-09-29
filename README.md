@@ -6,6 +6,20 @@ Highlight (*decorate*) what you want with Regex in VS Code
 
 **Examples** available at [examples.md](examples.md)
 
+## Commands
+
+- **highlight.regex.toggle**
+- **highlight.regex.global.toggle**
+- **highlight.regex.machine.toggle**
+- **highlight.regex.workspace.toggle**
+- **highlight.regex.choose.name**
+
+## Choose by name(s)
+
+Demo with **highlight.regex.choose.name** command.
+
+![demo choose by name](images/demoChooseByName.gif)
+
 ## Basic Settings
 
 - **highlight.regex.cacheLimit**: Limit of cache (default is 1000).
@@ -101,10 +115,3 @@ The first object can include the following properties:
 <p align="center">
   <img src="images/settingRegexes.drawio.png" >
 </p>
-
-## Commands
-
-- **highlight.regex.toggle**
-- **highlight.regex.global.toggle**
-- **highlight.regex.machine.toggle**
-- **highlight.regex.workspace.toggle**

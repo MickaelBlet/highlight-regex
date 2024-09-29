@@ -4,7 +4,7 @@ MIT License
 Copyright (c) 2022-2024 Mickaël Blet
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
+of this software and associated documentation files (the 'Software'), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
@@ -13,7 +13,7 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const vscode = require("vscode");
+const vscode = require('vscode');
 
 class Parser {
 
@@ -206,15 +206,15 @@ class Parser {
 					return hasGroup;
 				}
 
-				function convertBackSlach(str, offset, input) {
-					return '####B4CKSL4CHB4CKSL4CH####';
+				function convertBackSlash(str, offset, input) {
+					return '####B4CKSL4SHB4CKSL4SH####';
 				}
-				function reloadBackSlach(str, offset, input) {
+				function reloadBackSlash(str, offset, input) {
 					return '\\\\';
 				}
 
 				// replace all '\\'
-				let sRegexConverted = sRegex.replace(/\\\\/gm, convertBackSlach);
+				let sRegexConverted = sRegex.replace(/\\\\/gm, convertBackSlash);
 
 				let matchIndexToReal = { 0: 0 };
 				let matchNamedToReal = {};
@@ -234,7 +234,7 @@ class Parser {
 				// -------------------------------------------------------------------------
 				// create a newRegex
 
-				let newStrRegex = "";
+				let newStrRegex = '';
 
 				let index = 1;
 				let realIndex = 1;
@@ -276,7 +276,7 @@ class Parser {
 
 							// is assert
 							if ('<' === text[i] && ('=' === text[i + 1] || '!' === text[i + 1])) {
-								newStrRegex += "((?<" + text[i + 1];
+								newStrRegex += '((?<' + text[i + 1];
 								i++; // jump '<'
 								start = i + 1;
 								i = jumpToEndOfParenthesis(text, i);
@@ -284,14 +284,14 @@ class Parser {
 							}
 							// is assert
 							else if ('=' === text[i] || '!' === text[i]) {
-								newStrRegex += "((?" + text[i];
+								newStrRegex += '((?' + text[i];
 								start = i + 1;
 								i = jumpToEndOfParenthesis(text, i);
 								end = i;
 							}
 							// is named
 							else if ('<' === text[i]) {
-								newStrRegex += "((?:";
+								newStrRegex += '((?:';
 								start = i + 1;
 								for (let j = i; j < text.length; j++) {
 									i++;
@@ -314,13 +314,13 @@ class Parser {
 							}
 							// is non capture group
 							else if (':' === text[i]) {
-								newStrRegex += "((?:";
+								newStrRegex += '((?:';
 								start = i + 1;
 								i = jumpToEndOfParenthesis(text, i);
 								end = i;
 							}
 							else {
-								console.error("bad pattern ?");
+								console.error('bad pattern ?');
 							}
 
 							// get the end of group ')[...]'
@@ -337,14 +337,14 @@ class Parser {
 							let splitRegex = splitOrRegex(sGroup);
 							for (let j = 0; j < splitRegex.length; j++) {
 								if (j > 0) {
-									newStrRegex += "|";
+									newStrRegex += '|';
 								}
 								findGroups(splitRegex[j], parentIndexes.slice(), dependIndexes.slice());
 							}
 
 							parentIndexes.pop();
 
-							newStrRegex += ")" + text.substr(endGroup + 1, end - endGroup) + ")";
+							newStrRegex += ')' + text.substr(endGroup + 1, end - endGroup) + ')';
 
 							start = i + 1; // jump ')'
 						}
@@ -380,16 +380,16 @@ class Parser {
 							index++;
 							realIndex++;
 
-							newStrRegex += "(";
+							newStrRegex += '(';
 
 							if (end !== endGroup) {
-								newStrRegex += "(?:";
+								newStrRegex += '(?:';
 							}
 
 							let splitRegex = splitOrRegex(sGroup);
 							for (let j = 0; j < splitRegex.length; j++) {
 								if (j > 0) {
-									newStrRegex += "|";
+									newStrRegex += '|';
 								}
 								findGroups(splitRegex[j], parentIndexes.slice(), dependIndexes.slice());
 							}
@@ -397,10 +397,10 @@ class Parser {
 							parentIndexes.pop();
 
 							if (end !== endGroup) {
-								newStrRegex += ")" + text.substr(endGroup + 1, end - endGroup);
+								newStrRegex += ')' + text.substr(endGroup + 1, end - endGroup);
 							}
 
-							newStrRegex += ")";
+							newStrRegex += ')';
 
 							start = i + 1;
 						}
@@ -415,13 +415,13 @@ class Parser {
 				let splitRegex = splitOrRegex(sRegexConverted);
 				for (let i = 0; i < splitRegex.length; i++) {
 					if (i > 0) {
-						newStrRegex += "|";
+						newStrRegex += '|';
 					}
 					findGroups(splitRegex[i]);
 				}
 
 				// rollback replace all '\\'
-				newStrRegex = newStrRegex.replace(/####B4CKSL4CHB4CKSL4CH####/gm, reloadBackSlach);
+				newStrRegex = newStrRegex.replace(/####B4CKSL4SHB4CKSL4SH####/gm, reloadBackSlash);
 				return {
 					sRegex: newStrRegex,
 					matchIndexToReal,
@@ -430,9 +430,9 @@ class Parser {
 				};
 			}
 			if (regex.regex === undefined) {
-				throw "regex not found";
+				throw 'regex not found';
 			}
-			if (typeof regex.regex !== "string") {
+			if (typeof regex.regex !== 'string') {
 				regex.regex = regex.regex.join('');
 			}
 			let regexRegExp = new RegExp(regex.regex, (regex.regexFlag) ? regex.regexFlag : configuration.defaultRegexFlag);
@@ -457,26 +457,28 @@ class Parser {
 					return 0;
 				});
 				for (let decoration of regex.decorations) {
-					let index = (decoration.index) ? decoration.index : 0;
-					let hoverMessage = (decoration.hoverMessage) ? decoration.hoverMessage : undefined;
-					if (hoverMessage && typeof hoverMessage !== "string") {
+					// force copy
+					let decorationCopy = JSON.parse(JSON.stringify(decoration));
+					let index = (decorationCopy.index) ? decorationCopy.index : 0;
+					let hoverMessage = (decorationCopy.hoverMessage) ? decorationCopy.hoverMessage : undefined;
+					if (hoverMessage && typeof hoverMessage !== 'string') {
 						hoverMessage = hoverMessage.join('');
 					}
 					// z-index for background level
-					if (decoration.backgroundColor) {
-						decoration.backgroundColor += "; z-index: " + ((-100 * (10 - regexLevel)) + index)
+					if (decorationCopy.backgroundColor) {
+						decorationCopy.backgroundColor += '; z-index: ' + ((-100 * (10 - regexLevel)) + index)
 					}
 					else {
-						decoration.backgroundColor = "transparent; z-index: " + ((-100 * (10 - regexLevel)) + index)
+						decorationCopy.backgroundColor = 'transparent; z-index: ' + ((-100 * (10 - regexLevel)) + index)
 					}
-					delete decoration.index;
-					delete decoration.hoverMessage;
+					delete decorationCopy.index;
+					delete decorationCopy.hoverMessage;
 					decorationList.push({
 						index: index,
 						hoverMessage: hoverMessage,
 						decoration: this.decorations.length,
 					});
-					this.decorations.push(vscode.window.createTextEditorDecorationType(decoration));
+					this.decorations.push(vscode.window.createTextEditorDecorationType(decorationCopy));
 				}
 			}
 			return {
@@ -492,21 +494,21 @@ class Parser {
 			};
 		}
 		// reset regex
-		this.regexes.length = 0;
-		if (this.decorations.length > 0) {
-			this.decorations.splice(0, this.decorations.length);
-			this.decorations.length = 0;
-		}
+		this.regexes = [];
+		this.decorations = []
+		this.cacheEditors = [];
+		this.cacheEditorList = [];
 		this.cacheEditorLimit = configuration.cacheLimit;
 		// load regexes configuration
 		for (let regexList of regexesConfiguration) {
 			// compile regex
 			try {
+				let active = (regexList.active === undefined) ? true : regexList.active;
 				// stock languages
 				let languages = (regexList.languageIds) ? regexList.languageIds : undefined;
-				let languageRegex = new RegExp((regexList.languageRegex) ? regexList.languageRegex : ".*", "");
+				let languageRegex = new RegExp((regexList.languageRegex) ? regexList.languageRegex : '.*', '');
 				languageRegex.test();
-				let filenameRegex = new RegExp((regexList.filenameRegex) ? regexList.filenameRegex : ".*", "");
+				let filenameRegex = new RegExp((regexList.filenameRegex) ? regexList.filenameRegex : '.*', '');
 				filenameRegex.test();
 				let regexes = [];
 				if (regexList.regexes?.length > 0) {
@@ -515,6 +517,7 @@ class Parser {
 					}
 				}
 				this.regexes.push({
+					active: active,
 					languages: languages,
 					languageRegex: languageRegex,
 					filenameRegex: filenameRegex,
@@ -522,9 +525,9 @@ class Parser {
 				});
 			}
 			catch (error) {
-				console.error(this.name + ": " + error);
-				this.logger.error(this.name + ": " + error.toString());
-				vscode.window.showErrorMessage(error.toString(), "Close");
+				console.error(this.name + ': ' + error);
+				this.logger.error(this.name + ': ' + error.toString());
+				vscode.window.showErrorMessage(error.toString(), 'Close');
 			}
 		}
 	}
@@ -538,11 +541,11 @@ class Parser {
 				// disable old decoration
 				editor.setDecorations(decoration, []);
 			}
-			this.logger.info(this.name + ": Reset decorations at \"" + editor.document.fileName + "\"");
+			this.logger.info(this.name + ': Reset decorations at \'' + editor.document.fileName + '\'');
 		}
 		catch (error) {
-			console.error(this.name + ": " + error);
-			this.logger.error(this.name + ": " + error.toString());
+			console.error(this.name + ': ' + error);
+			this.logger.error(this.name + ': ' + error.toString());
 		}
 	}
 
@@ -580,13 +583,13 @@ class Parser {
 			while (search = regex.regexRegExp.exec(text)) {
 				regex.regexCount++;
 				if (regex.regexCount > regex.regexLimit) {
-					console.warn(this.name + ": Count overload pattern: " + regex.regexRegExp.source + " > " + regex.regexLimit);
-					this.logger.warn(this.name + ": Count overload pattern " + regex.regexRegExp.source + " > " + regex.regexLimit);
+					console.warn(this.name + ': Count overload pattern: ' + regex.regexRegExp.source + ' > ' + regex.regexLimit);
+					this.logger.warn(this.name + ': Count overload pattern ' + regex.regexRegExp.source + ' > ' + regex.regexLimit);
 					break;
 				}
 				if (search[0].length == 0) {
-					console.error(this.name + ": Bad pattern: " + regex.regexRegExp.source);
-					this.logger.error(this.name + ": Bad pattern " + regex.regexRegExp.source);
+					console.error(this.name + ': Bad pattern: ' + regex.regexRegExp.source);
+					this.logger.error(this.name + ': Bad pattern ' + regex.regexRegExp.source);
 					break;
 				}
 				if (regex.decorations && regex.decorations.length > 0) {
@@ -595,7 +598,7 @@ class Parser {
 							continue;
 						}
 						let decorationRealIndex;
-						if (typeof decoration.index === "number") {
+						if (typeof decoration.index === 'number') {
 							decorationRealIndex = regex.matchIndexToReal[decoration.index];
 						}
 						else {
@@ -633,7 +636,7 @@ class Parser {
 				if (regex.regexes && regex.regexes.length > 0) {
 					for (let insideRegex of regex.regexes) {
 						let insideRegexRealIndex;
-						if (typeof insideRegex.index === "number") {
+						if (typeof insideRegex.index === 'number') {
 							insideRegexRealIndex = regex.matchIndexToReal[insideRegex.index];
 						}
 						else {
@@ -662,20 +665,24 @@ class Parser {
 				if (regexes.regexes === undefined) {
 					continue;
 				}
+				// isActive
+				if (regexes.active === false) {
+					continue;
+				}
 				// check language
 				if (regexes.languages != undefined) {
-					this.logger.debug(this.name + ": Test list [" + regexes.languages + "] with \"" + editor.document.languageId + "\"");
+					this.logger.debug(this.name + ': Test list [' + regexes.languages + '] with \'' + editor.document.languageId + '\' at \'' + editor.document.fileName + '\'');
 					if (regexes.languages.indexOf(editor.document.languageId) < 0) {
 						continue;
 					}
 				}
 				else {
-					this.logger.debug(this.name + ": Test regex \"" + regexes.languageRegex + "\" with \"" + editor.document.languageId + "\"");
+					this.logger.debug(this.name + ': Test regex \'' + regexes.languageRegex + '\' with \'' + editor.document.languageId + '\' at \'' + editor.document.fileName + '\'');
 					if (!regexes.languageRegex.test(editor.document.languageId)) {
 						continue;
 					}
 				}
-				this.logger.debug(this.name + ": Test regex \"" + regexes.filenameRegex + "\" with \"" + editor.document.fileName + "\"");
+				this.logger.debug(this.name + ': Test regex \'' + regexes.filenameRegex + '\' with \'' + editor.document.fileName + '\' at \'' + editor.document.fileName + '\'');
 				if (!regexes.filenameRegex.test(editor.document.fileName)) {
 					continue;
 				}
@@ -688,8 +695,8 @@ class Parser {
 
 		}
 		catch (error) {
-			console.error(this.name + ": " + error);
-			this.logger.error(this.name + ": " + error.toString());
+			console.error(this.name + ': ' + error);
+			this.logger.error(this.name + ': ' + error.toString());
 		}
 
 		if (useWithRegexes === false) {
@@ -706,13 +713,14 @@ class Parser {
 				);
 			}
 			if (countDecoration > 0) {
-				this.logger.info(this.name + ": Update decorations at \"" + editor.document.fileName + "\" in " + (Date.now() - startTime) + " millisecond(s) with " + (countDecoration) + " occurence(s)");
+				this.logger.debug(this.name + ': Update decorations at \'' + editor.document.fileName + '\' in ' + (Date.now() - startTime) + ' millisecond(s) with ' + (countDecoration) + ' occurence(s)');
+				this.logger.info(this.name + ': Update decorations at \'' + editor.document.fileName + '\' with ' + (countDecoration) + ' occurence(s)');
 			}
 			this.cacheEditors[key] = cacheRanges;
 		}
 		catch (error) {
-			console.error(this.name + ": " + error);
-			this.logger.error(this.name + ": " + error.toString());
+			console.error(this.name + ': ' + error);
+			this.logger.error(this.name + ': ' + error.toString());
 		}
 	}
 
@@ -738,17 +746,18 @@ class Parser {
 					);
 				}
 				if (countDecoration > 0) {
-					this.logger.info(this.name + ": Cached decorations at \"" + editor.document.fileName + "\" in " + (Date.now() - startTime) + " millisecond(s) with " + (countDecoration) + " occurence(s)");
+					this.logger.debug(this.name + ': Cached decorations at \'' + editor.document.fileName + '\' in ' + (Date.now() - startTime) + ' millisecond(s) with ' + (countDecoration) + ' occurence(s)');
+					this.logger.info(this.name + ': Cached decorations at \'' + editor.document.fileName + '\' with ' + (countDecoration) + ' occurence(s)');
 				}
 			}
 			else {
-				this.logger.debug(this.name + ": Cached decorations not exists at \"" + editor.document.fileName + "\"");
+				this.logger.debug(this.name + ': Cached decorations not exists at \'' + editor.document.fileName + '\'');
 				this.updateDecorations(editor);
 			}
 		}
 		catch (error) {
-			console.error(this.name + ": " + error);
-			this.logger.error(this.name + ": " + error.toString());
+			console.error(this.name + ': ' + error);
+			this.logger.error(this.name + ': ' + error.toString());
 		}
 	}
 
@@ -769,17 +778,148 @@ class Parser {
 }; // class Parser
 
 function activate(context) {
-	const nameOfProperties = "highlight.regex";
+	const nameOfProperties = 'highlight.regex';
+	const configuration = vscode.workspace.getConfiguration(nameOfProperties);
+	let logger = vscode.window.createOutputChannel('Highlight regex', { 'log': true });
 
-	let configuration = vscode.workspace.getConfiguration(nameOfProperties);
-	let logger = vscode.window.createOutputChannel("Highlight regex", { "log": true });
-	let parserGlobalObj = new Parser("global", logger, configuration, configuration.regexes);
-	let parserMachineObj = new Parser("machine", logger, configuration, configuration.machine.regexes);
-	let parserWorkspaceObj = new Parser("workspace", logger, configuration, configuration.workspace.regexes);
+	let parserGlobalObj = new Parser('global', logger, configuration, configuration.regexes);
+	let parserMachineObj = new Parser('machine', logger, configuration, configuration.machine.regexes);
+	let parserWorkspaceObj = new Parser('workspace', logger, configuration, configuration.workspace.regexes);
 
+	let regexesConfigurations = [
+		{
+			scope: 'global',
+			propertyName: nameOfProperties + '.regexes',
+			regexes: vscode.workspace.getConfiguration(nameOfProperties).regexes,
+			changed: false,
+			parser: parserGlobalObj
+		},
+		{
+			scope: 'machine',
+			propertyName: nameOfProperties + '.machine.regexes',
+			regexes: vscode.workspace.getConfiguration(nameOfProperties).machine.regexes,
+			changed: false,
+			parser: parserMachineObj
+		},
+		{
+			scope: 'workspace',
+			propertyName: nameOfProperties + '.workspace.regexes',
+			regexes: vscode.workspace.getConfiguration(nameOfProperties).workspace.regexes,
+			changed: false,
+			parser: parserWorkspaceObj
+		}
+	]
+
+	// quickpick
+	let quickpick = vscode.window.createQuickPick();
+	quickpick.placeholder = 'Name of regex';
+	quickpick.title = 'Choose your regexes';
+	quickpick.canSelectMany = true;
+
+	// quickpick actions
+	quickpick.onDidAccept(() => {
+		logger.debug('quickpick: onDidAccept');
+		quickpick.hide();
+	});
+	quickpick.onDidHide(() => {
+		logger.debug('quickpick: onDidHide');
+		logger.debug('quickpick: updateSettings');
+		for (let regexesConfiguration of regexesConfigurations) {
+			if (regexesConfiguration.changed) {
+				vscode.workspace.getConfiguration().update(
+					regexesConfiguration.propertyName,
+					regexesConfiguration.regexes,
+					vscode.ConfigurationTarget.Workspace
+				);
+			}
+		}
+	});
+	quickpick.onDidChangeSelection((selectedItems) => {
+		logger.debug('quickpick: onDidChangeSelection');
+		if (selectedItems) {
+			for (let regexesConfiguration of regexesConfigurations) {
+				for (let i = 0; i < regexesConfiguration.regexes?.length; i++) {
+					let index = 0;
+					for (const result of selectedItems) {
+						if (result.scope == regexesConfiguration.scope && result.index == i) {
+							break;
+						}
+						index++;
+					}
+					if (index === selectedItems.length) {
+						if (regexesConfiguration.regexes[i].active) {
+							regexesConfiguration.changed = true;
+							regexesConfiguration.regexes[i].active = false;
+						}
+					}
+					else {
+						if (regexesConfiguration.regexes[i].active == undefined || regexesConfiguration.regexes[i].active == false) {
+							regexesConfiguration.changed = true;
+							regexesConfiguration.regexes[i].active = true;
+						}
+					}
+				}
+			}
+			let visibleTextEditors = vscode.window.visibleTextEditors;
+			for (let regexConfiguration of regexesConfigurations) {
+				if (regexConfiguration.changed) {
+					for (let textEditor of visibleTextEditors) {
+						regexConfiguration.parser.resetDecorations(textEditor);
+					}
+					regexConfiguration.parser.loadConfigurations(configuration, regexConfiguration.regexes);
+					for (let textEditor of visibleTextEditors) {
+						triggerUpdate(textEditor);
+					}
+				}
+			}
+		}
+	});
+
+	// commands subscriptions
+	context.subscriptions.push(
+		vscode.commands
+			.registerCommand('highlight.regex.choose.names', () => {
+				logger.debug('command: highlight.regex.choose.names');
+				let quickpickItems = [];
+				let quickpickSelectItems = [];
+				for (let regexesConfiguration of regexesConfigurations) {
+					regexesConfiguration.changed = false;
+					quickpickItems.push({
+						label: regexesConfiguration.scope,
+						kind: -1
+					});
+					for (let i = 0; i < regexesConfiguration.regexes?.length; i++) {
+						const regexes = regexesConfiguration.regexes[i];
+						try {
+							let item = {
+								// take the first regex if name not exissts
+								label: regexes.name === undefined ? regexes.regexes[0].regex : regexes.name,
+								description: regexes.description,
+								scope: regexesConfiguration.scope,
+								index: i,
+								picked: regexes.active === undefined ? true : regexes.active
+							};
+							quickpickItems.push(item);
+							if (item.picked) {
+								quickpickSelectItems.push(item);
+							}
+						}
+						catch (error) {
+							console.error('quickpick: ' + error);
+							logger.error('quickpick: ' + error.toString());
+						}
+					}
+				}
+				quickpick.items = quickpickItems;
+				quickpick.selectedItems = quickpickSelectItems;
+				logger.debug('quickpick: show');
+				quickpick.show();
+			})
+	);
 	context.subscriptions.push(
 		vscode.commands
 			.registerCommand('highlight.regex.toggle', () => {
+				logger.debug('command: highlight.regex.toggle');
 				parserGlobalObj.toggle(vscode.window.visibleTextEditors);
 				parserMachineObj.toggle(vscode.window.visibleTextEditors);
 				parserWorkspaceObj.toggle(vscode.window.visibleTextEditors);
@@ -788,18 +928,21 @@ function activate(context) {
 	context.subscriptions.push(
 		vscode.commands
 			.registerCommand('highlight.regex.global.toggle', () => {
+				logger.debug('command: highlight.regex.global.toggle');
 				parserGlobalObj.toggle(vscode.window.visibleTextEditors);
 			})
 	);
 	context.subscriptions.push(
 		vscode.commands
 			.registerCommand('highlight.regex.machine.toggle', () => {
+				logger.debug('command: highlight.regex.machine.toggle');
 				parserMachineObj.toggle(vscode.window.visibleTextEditors);
 			})
 	);
 	context.subscriptions.push(
 		vscode.commands
-			.registerCommand('highlight.regex.workspace.toggle', () => {
+		.registerCommand('highlight.regex.workspace.toggle', () => {
+				logger.debug('command: highlight.regex.workspace.toggle');
 				parserWorkspaceObj.toggle(vscode.window.visibleTextEditors);
 			})
 	);
@@ -815,16 +958,35 @@ function activate(context) {
 
 	// event configuration change
 	vscode.workspace.onDidChangeConfiguration(event => {
-		configuration = vscode.workspace.getConfiguration(nameOfProperties);
+		logger.debug('event: onDidChangeConfiguration');
+		const affectedGlobal = event.affectsConfiguration(nameOfProperties + '.regexes');
+		const affectedMachine = event.affectsConfiguration(nameOfProperties + '.machine.regexes');
+		const affectedWorkspace = event.affectsConfiguration(nameOfProperties + '.workspace.regexes');
+		const configuration = vscode.workspace.getConfiguration(nameOfProperties);
 		let visibleTextEditors = vscode.window.visibleTextEditors;
 		for (let i = 0; i < visibleTextEditors.length; i++) {
-			parserGlobalObj.resetDecorations(visibleTextEditors[i]);
-			parserMachineObj.resetDecorations(visibleTextEditors[i]);
-			parserWorkspaceObj.resetDecorations(visibleTextEditors[i]);
+			if (affectedGlobal) {
+				parserGlobalObj.resetDecorations(visibleTextEditors[i]);
+			}
+			if (affectedMachine) {
+				parserMachineObj.resetDecorations(visibleTextEditors[i]);
+			}
+			if (affectedWorkspace) {
+				parserWorkspaceObj.resetDecorations(visibleTextEditors[i]);
+			}
 		}
-		parserGlobalObj.loadConfigurations(configuration, configuration.regexes);
-		parserMachineObj.loadConfigurations(configuration, configuration.machine.regexes);
-		parserWorkspaceObj.loadConfigurations(configuration, configuration.workspace.regexes);
+		if (affectedGlobal) {
+			regexesConfigurations[0].regexes = vscode.workspace.getConfiguration(nameOfProperties).regexes;
+			parserGlobalObj.loadConfigurations(configuration, configuration.regexes);
+		}
+		if (affectedMachine) {
+			regexesConfigurations[1].regexes = vscode.workspace.getConfiguration(nameOfProperties).machine.regexes;
+			parserMachineObj.loadConfigurations(configuration, configuration.machine.regexes);
+		}
+		if (affectedWorkspace) {
+			regexesConfigurations[2].regexes = vscode.workspace.getConfiguration(nameOfProperties).workspace.regexes;
+			parserWorkspaceObj.loadConfigurations(configuration, configuration.workspace.regexes);
+		}
 		for (let i = 0; i < visibleTextEditors.length; i++) {
 			triggerUpdate(visibleTextEditors[i]);
 		}
@@ -833,9 +995,9 @@ function activate(context) {
 	// event change all text editor
 	vscode.window.onDidChangeVisibleTextEditors(visibleTextEditors => {
 		if (visibleTextEditors.length > 0) {
-			logger.debug("onDidChangeVisibleTextEditors: " + visibleTextEditors.length + " editor(s):");
+			logger.debug('event: onDidChangeVisibleTextEditors: ' + visibleTextEditors.length + ' editor(s):');
 			for (const uriEditor of visibleTextEditors.map((editor) => editor.document.uri.toString(true))) {
-				logger.debug("- " + uriEditor);
+				logger.debug('- ' + uriEditor);
 			}
 		}
 		let newVisibleEditors = [];
@@ -856,15 +1018,15 @@ function activate(context) {
 		);
 		let isNotLogOuput = false;
 		for (let i = 0; i < openEditors.length; i++) {
-			if ("output" != openEditors[i].document.uri.scheme || !openEditors[i].document.uri.toString(true).includes("Highlight regex")) {
+			if ('output' != openEditors[i].document.uri.scheme || !openEditors[i].document.uri.toString(true).includes('Highlight regex')) {
 				isNotLogOuput = true;
 				triggerUpdate(openEditors[i]);
 			}
 		}
 		if (isNotLogOuput && openEditors.length > 0) {
-			logger.debug("onDidChangeTextDocument: " + openEditors.length + " editor(s):")
+			logger.debug('event: onDidChangeTextDocument: ' + openEditors.length + ' editor(s):')
 			for (const uriEditor of openEditors.map((editor) => editor.document.uri.toString(true))) {
-				logger.debug("- " + uriEditor);
+				logger.debug('- ' + uriEditor);
 			}
 		}
 	});

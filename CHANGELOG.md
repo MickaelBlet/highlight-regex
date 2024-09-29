@@ -1,5 +1,12 @@
 # Change Log
 
+## Version 1.5.0: September 29, 2024
+### New Features
+* Add `highlight.regex.choose.name` command for quickpick regex by name.
+* Add `name` setting in `regexes` object.
+* Add `description` setting in `regexes` object.
+* Add `active` setting in `regexes` object.
+
 ## Version 1.4.3: September 18, 2024
 ### Fix
 * Decorations artifacts.
