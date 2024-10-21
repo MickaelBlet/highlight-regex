@@ -6,19 +6,20 @@ Highlight (*decorate*) what you want with Regex in VS Code
 
 **Examples** available at [examples.md](examples.md)
 
-## Commands
-
-- **highlight.regex.toggle**
-- **highlight.regex.global.toggle**
-- **highlight.regex.machine.toggle**
-- **highlight.regex.workspace.toggle**
-- **highlight.regex.choose.name**
-
 ## Choose by name(s)
 
-Demo with **highlight.regex.choose.name** command.
+Demo with **highlight.regex.choose.names** command.
 
 ![demo choose by name](images/demoChooseByName.gif)
+
+## Commands
+
+- **Highlight Regex: Toggle** (*highlight.regex.toggle*): Activate/Desactivate all scopes regexes.
+- **Highlight Regex: Global Toggle** (*highlight.regex.global.toggle*): Activate/Desactivate all regexes of global scope.
+- **Highlight Regex: Machine Toggle** (*highlight.regex.machine.toggle*): Activate/Desactivate all regexes of machine scope.
+- **Highlight Regex: Workspace Toggle** (*highlight.regex.workspace.toggle*): Activate/Desactivate all regexes of workspace scope.
+- **Highlight Regex: Choose by name(s)** (*highlight.regex.choose.names*): Activate/Desactivate specific regexes.
+- **Highlight Regex: Choose by name(s) on active editor** (*highlight.regex.active.choose.names*): Activate/Desactivate specific regexes.
 
 ## Basic Settings
 
@@ -31,6 +32,9 @@ Demo with **highlight.regex.choose.name** command.
 
 The **regexes** property is a list of objects.  
 The first object can include the following properties:
+- **name**: A name of regexes.
+- **description**: A description of regexes.
+- **active**: Set to false for disable these regexes.
 - **languageIds**: A list of language IDs used to apply child decorations.
 - **languageRegex**: A regex pattern that, when matched with the language ID, applies child decorations.
 - **filenameRegex**: A regex pattern that, when matched with the file path, applies child decorations.
@@ -47,7 +51,9 @@ The first object can include the following properties:
 ```jsonc
 "highlight.regex.regexes": [
   {
-    "languageIds": [ "c", "cpp", "go", "java", "javascript", "php", "rust", "typescript" ],
+    "name": "TODO/CRITICAL",
+    "description": "Show todo and critical keyword on comment(s)",
+    "languageRegex": "\\b(c|cpp|go|java|javascript|php|rust|typescript)\\b",
     "regexes": [
       {
         // regex to find all within comments
@@ -62,7 +68,7 @@ The first object can include the following properties:
           {
             "index": 0, // 0 for take all regex match (this is optionnal)
             "regex": [
-              "\\b(TODO)\\b",
+              "\\b(?<todo>TODO)\\b",
               "|",
               "\\b(CRITICAL)\\b"
             ],
@@ -70,7 +76,7 @@ The first object can include the following properties:
             "regexLimit": 25000,
             "decorations": [
               {
-                "index": 1, // index match regex group (TODO)
+                "index": "todo", // match regex named group (todo)
                 "borderRadius": "4px",
                 "fontWeight": "bold",
                 "overviewRulerColor": "#FF9900FF",

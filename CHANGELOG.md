@@ -1,8 +1,16 @@
 # Change Log
 
+## Version 2.0.0: October 10, 2024
+### New Features
+* Add `treeView` manager.
+### Enhancements
+* Quickpick now have a section for `active` editor.
+### Fix
+* Quickpick without name and regex.
+
 ## Version 1.5.0: September 29, 2024
 ### New Features
-* Add `highlight.regex.choose.name` command for quickpick regex by name.
+* Add `highlight.regex.choose.names` command for quickpick regex by name.
 * Add `name` setting in `regexes` object.
 * Add `description` setting in `regexes` object.
 * Add `active` setting in `regexes` object.
