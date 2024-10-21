@@ -26,18 +26,121 @@
 	],
 	"icon": "images/icon.drawio.png",
 	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "highlight-regex-view",
+					"title": "Highlight regex",
+					"icon": "images/icon.svg"
+				}
+			]
+		},
+		"views": {
+			"highlight-regex-view": [
+				{
+					"id": "highlight.regex.view.user",
+					"name": "Global"
+				},
+				{
+					"id": "highlight.regex.view.workspace",
+					"name": "Workspace"
+				}
+			]
+		},
+		"menus": {
+			"view/title": [
+{% for scope in ['user', 'workspace'] %}
+				{
+					"command": "highlight.regex.{{scope}}.addEntry",
+					"when": "view == highlight.regex.view.{{scope}}",
+					"group": "navigation@1"
+				},
+				{
+					"command": "highlight.regex.{{scope}}.refreshEntries",
+					"when": "view == highlight.regex.view.{{scope}}",
+					"group": "navigation@2"
+				},
+				{
+					"command": "highlight.regex.{{scope}}.collapseAll",
+					"when": "view == highlight.regex.view.{{scope}}",
+					"group": "navigation@3"
+				}
+{% if scope != 'workspace' %}
+,
+{% endif %}
+{% endfor %}
+			],
+			"view/item/context": [
+{% for scope in ['user', 'workspace'] %}
+				{
+					"command": "highlight.regex.{{scope}}.editEntry",
+					"when": "view == highlight.regex.view.{{scope}}",
+					"group": "inline@1"
+				},
+				{
+					"command": "highlight.regex.{{scope}}.editEntry",
+					"when": "view == highlight.regex.view.{{scope}}",
+					"group": "navigation@1"
+				},
+				{
+					"command": "highlight.regex.{{scope}}.deleteEntry",
+					"when": "view == highlight.regex.view.{{scope}}",
+					"group": "3_navigation@1"
+				},
+				{
+					"command": "highlight.regex.{{scope}}.moveUpEntry",
+					"when": "view == highlight.regex.view.{{scope}} && viewItem == parent",
+					"group": "inline@2"
+				},
+				{
+					"command": "highlight.regex.{{scope}}.moveUpEntry",
+					"when": "view == highlight.regex.view.{{scope}} && viewItem == parent",
+					"group": "navigation@2"
+				},
+				{
+					"command": "highlight.regex.{{scope}}.moveDownEntry",
+					"when": "view == highlight.regex.view.{{scope}} && viewItem == parent",
+					"group": "inline@3"
+				},
+				{
+					"command": "highlight.regex.{{scope}}.moveDownEntry",
+					"when": "view == highlight.regex.view.{{scope}} && viewItem == parent",
+					"group": "navigation@3"
+				}
+{% if scope == 'user' %}
+				,
+				{
+					"command": "highlight.regex.{{scope}}.copyToWorkspace",
+					"when": "view == highlight.regex.view.{{scope}} && viewItem == parent",
+					"group": "2_navigation@1"
+				}
+{% endif %}
+{% if scope == 'workspace' %}
+				,
+				{
+					"command": "highlight.regex.{{scope}}.copyToUser",
+					"when": "view == highlight.regex.view.{{scope}} && viewItem == parent",
+					"group": "2_navigation@1"
+				}
+{% endif %}
+{% if scope != 'workspace' %}
+,
+{% endif %}
+{% endfor %}
+			]
+		},
 		"commands": [
 			{
 				"command": "highlight.regex.toggle",
 				"title": "Highlight Regex: Toggle"
 			},
 			{
-				"command": "highlight.regex.global.toggle",
-				"title": "Highlight Regex: Global toggle"
+				"command": "highlight.regex.user.toggle",
+				"title": "Highlight Regex: User toggle"
 			},
 			{
-				"command": "highlight.regex.machine.toggle",
-				"title": "Highlight Regex: Machine toggle"
+				"command": "highlight.regex.remote.toggle",
+				"title": "Highlight Regex: Remote toggle"
 			},
 			{
 				"command": "highlight.regex.workspace.toggle",
@@ -46,26 +149,124 @@
 			{
 				"command": "highlight.regex.choose.names",
 				"title": "Highlight Regex: Choose by name(s)"
+			},
+{% for scope in ['user', 'workspace'] %}
+			{
+				"command": "highlight.regex.{{scope}}.addEntry",
+				"title": "Add",
+				"icon": "$(add)",
+				"enablement": "view == highlight.regex.view.{{scope}}"
+			},
+			{
+				"command": "highlight.regex.{{scope}}.refreshEntries",
+				"title": "Refresh",
+				"icon": "$(refresh)",
+				"enablement": "view == highlight.regex.view.{{scope}}"
+			},
+			{
+				"command": "highlight.regex.{{scope}}.collapseAll",
+				"title": "Collapse All",
+				"icon": "$(collapse-all)",
+				"enablement": "view == highlight.regex.view.{{scope}}"
+			},
+			{
+				"command": "highlight.regex.{{scope}}.editEntry",
+				"title": "Edit",
+				"icon": "$(edit)",
+				"enablement": "view == highlight.regex.view.{{scope}}"
+			},
+			{
+				"command": "highlight.regex.{{scope}}.deleteEntry",
+				"title": "Delete",
+				"icon": "$(trash)",
+				"enablement": "view == highlight.regex.view.{{scope}}"
+			},
+			{
+				"command": "highlight.regex.{{scope}}.moveUpEntry",
+				"title": "Move up",
+				"icon": "$(arrow-up)",
+				"enablement": "view == highlight.regex.view.{{scope}}"
+			},
+			{
+				"command": "highlight.regex.{{scope}}.moveDownEntry",
+				"title": "Move down",
+				"icon": "$(arrow-down)",
+				"enablement": "view == highlight.regex.view.{{scope}}"
 			}
+{% if scope == 'user' %}
+			,
+			{
+				"command": "highlight.regex.{{scope}}.copyToWorkspace",
+				"title": "Copy to workspace",
+				"icon": "$(references)",
+				"enablement": "view == highlight.regex.view.{{scope}}"
+			}
+{% endif %}
+{% if scope == 'workspace' %}
+			,
+			{
+				"command": "highlight.regex.{{scope}}.copyToUser",
+				"title": "Copy to user",
+				"icon": "$(references)",
+				"enablement": "view == highlight.regex.view.{{scope}}"
+			}
+{% endif %}
+{% if scope != 'workspace' %}
+,
+{% endif %}
+{% endfor %}
 		],
 		"configuration": {
 			"properties": {
 				"highlight.regex.cacheLimit": {
+					"scope": "resource",
 					"type": "integer",
 					"description": "Limit of cache",
 					"default": 1000
 				},
 				"highlight.regex.defaultRegexLimit": {
+					"scope": "resource",
 					"type": "integer",
 					"description": "Default limit of search regex",
 					"default": 50000
 				},
 				"highlight.regex.defaultRegexFlag": {
+					"scope": "resource",
 					"type": "string",
 					"description": "Default regex flag",
 					"default": "gm"
 				},
+				"highlight.regex.defaultAddSnippet": {
+					"scope": "resource",
+					"type": [
+						"array",
+						"string"
+					],
+					"description": "Default add snippet",
+					"items": {
+						"type": "string",
+						"title": "line of snippet"
+					},
+					"default": [
+						"{",
+						"\t\"name\": \"${1:name}\",",
+						"\t\"description\": \"${2:description}\",",
+						"\t\"regexes\": [",
+						"\t\t{",
+						"\t\t\t\"regex\": \"${3:(regex)}\",",
+						"\t\t\t\"decorations\": [",
+						"\t\t\t\t{",
+						"\t\t\t\t\t\"backgroundColor\": \"${4:#000000}\",",
+						"\t\t\t\t\t\"color\": \"${5:#ff0000}\"",
+						"\t\t\t\t}",
+						"\t\t\t]",
+						"\t\t}",
+						"\t]",
+						"}"
+					]
+				},
 				"highlight.regex.delay": {
+					"scope": "resource",
 					"type": "integer",
 					"description": "Delay to applicate decorations after update events (in milliseconds)",
 					"default": 200
@@ -73,27 +274,18 @@
 				"highlight.regex.timeout": {
 					"deprecationMessage": "Use \"highlight.regex.delay\" instead"
 				},
-{% for scope in ['window', 'machine', 'machine-overridable'] %}
-{% if scope == 'machine' %}
-"highlight.regex.machine.regexes": {
-{% elif scope == 'machine-overridable' %}
-"highlight.regex.workspace.regexes": {
-{% else %}
+{% for scope in ['user', 'workspace'] %}
+{% if scope == 'user' %}
 "highlight.regex.regexes": {
+{% elif scope == 'workspace' %}
+"highlight.regex.workspace.regexes": {
 {% endif %}
-{% if scope == 'window' %}
+{% if scope == 'user' %}
 	"default": [
 		{
-			"languageIds": [
-				"c",
-				"cpp",
-				"go",
-				"java",
-				"javascript",
-				"php",
-				"rust",
-				"typescript"
-			],
+			"name": "TODO/CRITICAL",
+			"description": "Show todo and critical keyword on comment(s)",
+			"languageRegex": "\\b(c|cpp|go|java|javascript|php|rust|typescript)\\b",
 			"regexes": [
 				{
 					"regex": [
@@ -158,11 +350,11 @@
 {% endif %}
 	"type": "array",
 	"title": "Regexes",
-{% if scope == 'machine' %}
-	"markdownDescription": "Set search regex with decoration for host\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
-{% elif scope == 'machine-overridable' %}
+{% if scope == 'workspace' %}
+	"scope": "resource",
 	"markdownDescription": "Set search regex with decoration for workspace\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
 {% else %}
+	"scope": "resource",
 	"markdownDescription": "Set search regex with decoration\n\nDefault setting at [Marketplace extension](https://marketplace.visualstudio.com/items?itemName=mblet.highlight-regex#default-regexes-setting)\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
 {% endif %}
 	"items": {
@@ -198,7 +390,7 @@
 			"languageRegex": {
 				"type": "string",
 				"title": "languageRegex",
-				"description": "Regex for activated decorations if match with language Id (work if the property languageIds not exists or is empty)",
+				"markdownDescription": "Regex for activated decorations if match with language Id\n(work if the property languageIds not exists or is empty)\n\nExample: \"\\\\b(c|cpp|go|java|javascript|php|rust|typescript)\\\\b\"",
 				"default": ".*"
 			},
 			"filenameRegex": {
@@ -226,8 +418,8 @@
 						},
 						"regex": {
 							"type": [
-								"array",
-								"string"
+								"string",
+								"array"
 							],
 							"title": "Regex",
 							"description": "Regex string",
@@ -730,8 +922,8 @@
 									},
 									"hoverMessage": {
 										"type": [
-											"array",
-											"string"
+											"string",
+											"array"
 										],
 										"title": "hoverMessage",
 										"description": "A message that should be rendered when hovering over the decoration.",
@@ -1069,7 +1261,7 @@
 		}
 	}
 }
-{% if scope != 'machine-overridable' %}
+{% if scope != 'workspace' %}
 ,
 {% endif %}
 {% endfor %}
