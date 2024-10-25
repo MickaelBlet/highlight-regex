@@ -5,6 +5,7 @@
 * Add `treeView` manager.
 ### Enhancements
 * Quickpick now have a section for `active` editor.
+* Zindex for the css background properties.
 ### Fix
 * Quickpick without name and regex.
 

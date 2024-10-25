@@ -19,7 +19,6 @@ Demo with **highlight.regex.choose.names** command.
 - **Highlight Regex: Machine Toggle** (*highlight.regex.machine.toggle*): Activate/Desactivate all regexes of machine scope.
 - **Highlight Regex: Workspace Toggle** (*highlight.regex.workspace.toggle*): Activate/Desactivate all regexes of workspace scope.
 - **Highlight Regex: Choose by name(s)** (*highlight.regex.choose.names*): Activate/Desactivate specific regexes.
-- **Highlight Regex: Choose by name(s) on active editor** (*highlight.regex.active.choose.names*): Activate/Desactivate specific regexes.
 
 ## Basic Settings
 
