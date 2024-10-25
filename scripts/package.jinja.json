@@ -51,19 +51,24 @@
 			"view/title": [
 {% for scope in ['user', 'workspace'] %}
 				{
-					"command": "highlight.regex.{{scope}}.addEntry",
+					"command": "highlight.regex.{{scope}}.toggleCheckAll",
 					"when": "view == highlight.regex.view.{{scope}}",
 					"group": "navigation@1"
 				},
 				{
-					"command": "highlight.regex.{{scope}}.refreshEntries",
+					"command": "highlight.regex.{{scope}}.addEntry",
 					"when": "view == highlight.regex.view.{{scope}}",
 					"group": "navigation@2"
 				},
 				{
-					"command": "highlight.regex.{{scope}}.collapseAll",
+					"command": "highlight.regex.{{scope}}.refreshEntries",
 					"when": "view == highlight.regex.view.{{scope}}",
 					"group": "navigation@3"
+				},
+				{
+					"command": "highlight.regex.{{scope}}.collapseAll",
+					"when": "view == highlight.regex.view.{{scope}}",
+					"group": "navigation@4"
 				}
 {% if scope != 'workspace' %}
 ,
@@ -151,6 +156,12 @@
 				"title": "Highlight Regex: Choose by name(s)"
 			},
 {% for scope in ['user', 'workspace'] %}
+			{
+				"command": "highlight.regex.{{scope}}.toggleCheckAll",
+				"title": "Toggle check all",
+				"icon": "$(check-all)",
+				"enablement": "view == highlight.regex.view.{{scope}}"
+			},
 			{
 				"command": "highlight.regex.{{scope}}.addEntry",
 				"title": "Add",
