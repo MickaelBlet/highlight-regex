@@ -2,6 +2,7 @@
 
 ## Version 2.0.0: October 10, 2024
 ### New Features
+* New icon.
 * Add `treeView` manager.
 ### Enhancements
 * Quickpick now have a section for `active` editor.

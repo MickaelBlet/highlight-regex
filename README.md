@@ -8,45 +8,80 @@ Highlight (*decorate*) what you want with Regex in VS Code
 
 ## Choose by name(s)
 
-Demo with **highlight.regex.choose.names** command.
+**Highlight Regex: Choose by name(s)** (*highlight.regex.choose.names*) command.
 
 ![demo choose by name](images/demoChooseByName.gif)
 
+## Tree manager
+
+### Select
+
+Choose from tree your regexes.
+
+![tree select workspace](images/treeSelectWorkspace.gif)
+
+## Edit
+
+Edit key(s) within workspace json settings.
+
+![alt text](images/treeEditItemWorkspace.gif)
+
+### Priority
+
+Change the order of regexes to adjust their priority.
+
+![alt text](images/treePriorityWorkspace.gif)
+
+### Navigate
+
+Navigate through regex matches in the active editor.
+
+![alt text](images/treeActiveSearch.gif)
+
 ## Commands
 
-- **Highlight Regex: Toggle** (*highlight.regex.toggle*): Activate/Desactivate all scopes regexes.
-- **Highlight Regex: Global Toggle** (*highlight.regex.global.toggle*): Activate/Desactivate all regexes of global scope.
-- **Highlight Regex: Machine Toggle** (*highlight.regex.machine.toggle*): Activate/Desactivate all regexes of machine scope.
-- **Highlight Regex: Workspace Toggle** (*highlight.regex.workspace.toggle*): Activate/Desactivate all regexes of workspace scope.
-- **Highlight Regex: Choose by name(s)** (*highlight.regex.choose.names*): Activate/Desactivate specific regexes.
+|Name|Command|Description|
+|---|---|---|
+|**Highlight Regex: Choose by name(s)**|*highlight.regex.choose.names*|Activate/Desactivate specific regexes
+|**Highlight Regex: Toggle**|*highlight.regex.toggle*|Activate/Desactivate all scopes regexes|
+|**Highlight Regex: Global Toggle**|*highlight.regex.global.toggle*|Activate/Desactivate all regexes of global scope|
+|**Highlight Regex: Workspace Toggle**|*highlight.regex.workspace.toggle*|Activate/Desactivate all regexes of workspace scope|
 
 ## Basic Settings
 
-- **highlight.regex.cacheLimit**: Limit of cache (default is 1000).
-- **highlight.regex.defaultRegexLimit**: Default limit of search regex (default is 50000).
-- **highlight.regex.defaultRegexFlag**: Default regex flag (default is gm)
-- **highlight.regex.delay**: Delay to applicate decorations after update events (in milliseconds) (default 200).
+|Name|Description|Default|
+|---|---|---|
+|**highlight.regex.cacheLimit**|Limit of cache|1000|
+|**highlight.regex.defaultRegexLimit**|Default limit of search regex|50000|
+|**highlight.regex.defaultRegexFlag**|Default regex flag|gm|
+|**highlight.regex.delay**|Delay to applicate decorations after update events (in milliseconds)|200|
 
 ## Regexes Settings
 
-The **regexes** property is a list of objects.  
-The first object can include the following properties:
-- **name**: A name of regexes.
-- **description**: A description of regexes.
-- **active**: Set to false for disable these regexes.
-- **languageIds**: A list of language IDs used to apply child decorations.
-- **languageRegex**: A regex pattern that, when matched with the language ID, applies child decorations.
-- **filenameRegex**: A regex pattern that, when matched with the file path, applies child decorations.
-- **regexes**: A list of objects with the following properties:
-  - **regex**: The regex pattern to be applied (string or strings list).
-  - **regexFlag**: The flag for the regex (default is **highlight.regex.defaultRegexFlag**).
-  - **regexLimit**: The limit on how many matches the regex can find (default is **highlight.regex.defaultRegexLimit**).
-  - **decorations**: A list of [VS Code decorations](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)
-    - Optionnal **index** property to indicate the index or name of the matched regex group.
-    - Optionnal **hoverMessage** property to add a message or multiple message lines when hovering over a match group.
-  - **regexes**: A list of child **regexes**.
+The **highlight.regex.regexes** and **highlight.regex.workspace.regexes** properties take a list of objects.  
+The first object level can include the following properties:
+|Name|Description|
+|---|---|
+|**name**|A name of regexes|
+|**description**|A description of regexes|
+|**active**|Set to false for disable these regexes|
+|**languageIds**|A list of language IDs used to apply child decorations|
+|**languageRegex**|If languageIds not define, A regex pattern that, when matched with the language ID, applies child decorations|
+|**filenameRegex**|A regex pattern that, when matched with the file path, applies child decorations|
+|**regexes**|A list of objects with the [Regexes child settings](#regexes-child-settings) properties
 
-### Default Regexes Setting
+### Regexes child settings
+
+|Name|Description|
+|---|---|
+|**index**|The index or name of the matched regex group (default is 0)|
+|**regex**|The regex pattern to be applied (string or strings list)|
+|**regexFlag**|The flag for the regex (default is **highlight.regex.defaultRegexFlag**)|
+|**regexLimit**|The limit on how many matches the regex can find (default is **highlight.regex.defaultRegexLimit**)|
+|**decorations**|A list of [VS Code decorations](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)<br>- Optionnal **index** property to indicate the index or name of the matched regex group.<br>- Optionnal **hoverMessage** property to add a message when hovering over a match group|
+|**regexes**|A list of child [Regexes child settings](#regexes-child-settings)|
+
+### Default "highlight.regex.regexes" setting
 ```jsonc
 "highlight.regex.regexes": [
   {
