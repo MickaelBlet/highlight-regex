@@ -38,18 +38,22 @@
 		"views": {
 			"highlight-regex-view": [
 				{
-					"id": "highlight.regex.view.user",
+					"id": "highlight.regex.view.workspace",
+					"name": "Workspace"
+				},
+				{
+					"id": "highlight.regex.view.global",
 					"name": "Global"
 				},
 				{
-					"id": "highlight.regex.view.workspace",
-					"name": "Workspace"
+					"id": "highlight.regex.view.active",
+					"name": "Active"
 				}
 			]
 		},
 		"menus": {
 			"view/title": [
-{% for scope in ['user', 'workspace'] %}
+{% for scope in ['global', 'workspace'] %}
 				{
 					"command": "highlight.regex.{{scope}}.toggleCheckAll",
 					"when": "view == highlight.regex.view.{{scope}}",
@@ -76,7 +80,7 @@
 {% endfor %}
 			],
 			"view/item/context": [
-{% for scope in ['user', 'workspace'] %}
+{% for scope in ['global', 'workspace'] %}
 				{
 					"command": "highlight.regex.{{scope}}.editEntry",
 					"when": "view == highlight.regex.view.{{scope}}",
@@ -112,7 +116,7 @@
 					"when": "view == highlight.regex.view.{{scope}} && viewItem == parent",
 					"group": "navigation@3"
 				}
-{% if scope == 'user' %}
+{% if scope == 'global' %}
 				,
 				{
 					"command": "highlight.regex.{{scope}}.copyToWorkspace",
@@ -123,7 +127,7 @@
 {% if scope == 'workspace' %}
 				,
 				{
-					"command": "highlight.regex.{{scope}}.copyToUser",
+					"command": "highlight.regex.{{scope}}.copyToGlobal",
 					"when": "view == highlight.regex.view.{{scope}} && viewItem == parent",
 					"group": "2_navigation@1"
 				}
@@ -140,12 +144,8 @@
 				"title": "Highlight Regex: Toggle"
 			},
 			{
-				"command": "highlight.regex.user.toggle",
-				"title": "Highlight Regex: User toggle"
-			},
-			{
-				"command": "highlight.regex.remote.toggle",
-				"title": "Highlight Regex: Remote toggle"
+				"command": "highlight.regex.global.toggle",
+				"title": "Highlight Regex: Global toggle"
 			},
 			{
 				"command": "highlight.regex.workspace.toggle",
@@ -155,7 +155,7 @@
 				"command": "highlight.regex.choose.names",
 				"title": "Highlight Regex: Choose by name(s)"
 			},
-{% for scope in ['user', 'workspace'] %}
+{% for scope in ['global', 'workspace'] %}
 			{
 				"command": "highlight.regex.{{scope}}.toggleCheckAll",
 				"title": "Toggle check all",
@@ -204,7 +204,7 @@
 				"icon": "$(arrow-down)",
 				"enablement": "view == highlight.regex.view.{{scope}}"
 			}
-{% if scope == 'user' %}
+{% if scope == 'global' %}
 			,
 			{
 				"command": "highlight.regex.{{scope}}.copyToWorkspace",
@@ -216,8 +216,8 @@
 {% if scope == 'workspace' %}
 			,
 			{
-				"command": "highlight.regex.{{scope}}.copyToUser",
-				"title": "Copy to user",
+				"command": "highlight.regex.{{scope}}.copyToglobal",
+				"title": "Copy to global",
 				"icon": "$(references)",
 				"enablement": "view == highlight.regex.view.{{scope}}"
 			}
@@ -285,13 +285,13 @@
 				"highlight.regex.timeout": {
 					"deprecationMessage": "Use \"highlight.regex.delay\" instead"
 				},
-{% for scope in ['user', 'workspace'] %}
-{% if scope == 'user' %}
+{% for scope in ['global', 'workspace'] %}
+{% if scope == 'global' %}
 "highlight.regex.regexes": {
 {% elif scope == 'workspace' %}
 "highlight.regex.workspace.regexes": {
 {% endif %}
-{% if scope == 'user' %}
+{% if scope == 'global' %}
 	"default": [
 		{
 			"name": "TODO/CRITICAL",
@@ -366,7 +366,7 @@
 	"markdownDescription": "Set search regex with decoration for workspace\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
 {% else %}
 	"scope": "resource",
-	"markdownDescription": "Set search regex with decoration\n\nDefault setting at [Marketplace extension](https://marketplace.visualstudio.com/items?itemName=mblet.highlight-regex#default-regexes-setting)\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
+	"markdownDescription": "Set search regex with decoration\n\nDecoration at [API docs decoration](https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions)",
 {% endif %}
 	"items": {
 		"type": "object",

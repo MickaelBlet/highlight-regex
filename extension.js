@@ -38,7 +38,7 @@ class Parser {
 		this.decorations = [];
 		this.cacheEditors = [];
 		this.cacheEditorList = [];
-		this.startZindex = (scope == "user") ? -100000 : 0;
+		this.startZindex = (scope == "global") ? -100000 : 0;
 		this.loadConfigurations(configuration, regexesConfiguration);
 	}
 
@@ -525,6 +525,7 @@ class Parser {
 		this.cacheEditors = [];
 		this.cacheEditorList = [];
 		this.cacheEditorLimit = configuration.cacheLimit;
+		let decorationStartIndex = 0;
 		// load regexes configuration
 		for (let i = 0; i < regexesConfiguration.length; i++) {
 			// compile regex
@@ -543,13 +544,35 @@ class Parser {
 						regexes.push(loadRegexes(configuration, regexList.regexes[j]));
 					}
 				}
+				// take the first regex if name not exists
+				let label = 'undefined';
+				if (regexList.name !== undefined) {
+					label = regexList.name;
+				}
+				else {
+					if (regexList.regexes && regexList.regexes.length > 0 && regexList.regexes[0].regex !== undefined) {
+						if (typeof regexList.regexes[0].regex === 'string') {
+							label = regexList.regexes[0].regex;
+						}
+						else {
+							// transform regex array to string
+							label = regexList.regexes[0].regex.join('');
+						}
+					}
+				}
 				this.regexes.push({
+					label: label,
+					decorationRange: {
+						start: decorationStartIndex,
+						end: this.decorations.length - 1
+					},
 					active: active,
 					languages: languages,
 					languageRegex: languageRegex,
 					filenameRegex: filenameRegex,
 					regexes: regexes
 				});
+				decorationStartIndex = this.decorations.length;
 			}
 			catch (error) {
 				log.error(`${this.scope}: ${error.toString()}`);
@@ -642,6 +665,7 @@ class Parser {
 								let htmlHovermessage = new vscode.MarkdownString();
 								htmlHovermessage.supportHtml = true;
 								htmlHovermessage.isTrusted = true;
+								htmlHovermessage.supportThemeIcons = true;
 								htmlHovermessage.appendMarkdown(decoration.hoverMessage);
 								cacheRanges[decoration.decoration].push({
 									range: vsRange,
@@ -930,7 +954,7 @@ class TreeItem {
 			}
 			let item = new vscode.TreeItem(`${label}: ${valueFormated}`, vscode.TreeItemCollapsibleState.None);
 			item.path = `${path}/${label}`;
-			item.tooltip = value;
+			item.tooltip = valueFormated;
 			childs.push(item);
 		}
 	}
@@ -941,11 +965,11 @@ class ScopeManager {
 	constructor(configuration) {
 		// const configuration = vscode.workspace.getConfiguration(extensionId);
 
-		this.user = new Scope('user', `${extensionId}.regexes`, configuration, configuration.regexes);
+		this.global = new Scope('global', `${extensionId}.regexes`, configuration, configuration.regexes);
 		this.workspace = new Scope('workspace', `${extensionId}.workspace.regexes`, configuration, configuration.workspace.regexes);
 		this.map = [];
-		this.map['user'] = this.user;
 		this.map['workspace'] = this.workspace;
+		this.map['global'] = this.global;
 	}
 
 }; // class ScopeManager
@@ -1005,7 +1029,7 @@ class Scope {
 	}
 
 	loadFromConfiguration() {
-		if (this.name == 'user') {
+		if (this.name == 'global') {
 			this.regexes = vscode.workspace.getConfiguration(extensionId).regexes;
 		}
 		else if (this.name == 'workspace') {
@@ -1062,6 +1086,7 @@ class Scope {
 		for (let textEditor of vscode.window.visibleTextEditors) {
 			this.parser.resetDecorations(textEditor);
 		}
+		manager.active.update(vscode.window.activeTextEditor);
 	}
 
 	updateDecorations() {
@@ -1070,6 +1095,7 @@ class Scope {
 		for (let textEditor of vscode.window.visibleTextEditors) {
 			this.parser.updateDecorations(textEditor);
 		}
+		manager.active.update(vscode.window.activeTextEditor);
 	}
 
 	toggleDecorations() {
@@ -1158,7 +1184,7 @@ class QuickPick {
 			if (event.button.tooltip == 'Edit') {
 				let path = `/${that.scopeManager.map[event.item.scope].propertyName}/[${event.item.index}]`;
 				if (path.startsWith("/highlight.regex.regexes")) {
-					await manager.scopeManager.user.updateConfiguration();
+					await manager.scopeManager.global.updateConfiguration();
 				}
 				else {
 					await manager.scopeManager.workspace.updateConfiguration();
@@ -1675,6 +1701,200 @@ class Setting {
 	}
 }; // class JsonSetting
 
+class ActiveTreeDataProvider {
+	constructor() {
+		this.items = [];
+		// refresh event
+		this._onDidChangeTreeData = new vscode.EventEmitter();
+		this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+	}
+
+	getTreeItem(element) {
+		return element;
+	}
+
+	getChildren(element) {
+		if (element) {
+			return element.childrens;
+		}
+		else {
+			return this.items;
+		}
+	}
+
+	getParent(element) {
+		return element;
+	}
+
+	updateActiveEditor(activeEditor) {
+		log.debug(`Active: TreeView: updateActiveEditor`);
+		if (activeEditor === undefined) {
+			this.items = [];
+			return;
+		}
+		try {
+			// search editor uri on tabgroups
+			let i = 0;
+			for (; i < vscode.window.tabGroups.all.length; i++) {
+				let j = 0;
+				for (; j < vscode.window.tabGroups.all[i].tabs.length; j++) {
+					if (vscode.window.tabGroups.all[i].tabs[j].input !== undefined &&
+						vscode.window.tabGroups.all[i].tabs[j].input.uri !== undefined &&
+						vscode.window.tabGroups.all[i].tabs[j].input.uri.toString(true) === activeEditor.document.uri.toString(true)) {
+						manager.active.tree.description = vscode.window.tabGroups.all[i].tabs[j].label;
+						break;
+					}
+				}
+				if (j < vscode.window.tabGroups.all[i].tabs.length) {
+					break;
+				}
+			}
+			if (i == vscode.window.tabGroups.all.length) {
+				manager.active.tree.description = activeEditor.document.uri.fsPath;
+			}
+		}
+		catch (error) {
+			log.error(`${error.toString()}`);
+		}
+		let activeEditorKey = activeEditor.document.uri.toString(true);
+		let items = [];
+		for (let scopeKey in manager.scopeManager.map) {
+			const cacheEditors = manager.scopeManager.map[scopeKey].parser.cacheEditors;
+			const regexes = manager.scopeManager.map[scopeKey].parser.regexes;
+			if (activeEditorKey in cacheEditors && cacheEditors[activeEditorKey]) {
+				const cacheRanges = cacheEditors[activeEditorKey];
+				for (const regex of regexes) {
+					let childrens = [];
+					for (const decorationIndex in cacheRanges) {
+						if (cacheRanges[decorationIndex].length > 0) {
+							if (regex.decorationRange.start <= decorationIndex && regex.decorationRange.end >= decorationIndex) {
+								for (const range of cacheRanges[decorationIndex]) {
+									let line = activeEditor.document.lineAt(range.range.start.line);
+									let prefix = `${range.range.start.line + 1}:\t`;
+									childrens.push({
+										context: "selectToEditor",
+										range: range.range,
+										label: {
+											label: `${prefix}${line.text.substring(line.firstNonWhitespaceCharacterIndex)}`,
+											highlights: [
+												[
+													range.range.start.character - line.firstNonWhitespaceCharacterIndex + prefix.length,
+													range.range.end.character - line.firstNonWhitespaceCharacterIndex + prefix.length
+												]
+											]
+										},
+										// description: `[Ln ${range.range.start.line + 1}, Col ${range.range.start.character + 1}]`,
+										tooltip: `${line.text.substring(line.firstNonWhitespaceCharacterIndex)} [Ln ${range.range.start.line + 1}, Col ${range.range.start.character + 1}]`,
+										collapsibleState: vscode.TreeItemCollapsibleState.None,
+										// resourceUri: vscode.Uri.parse(`highlight.regex.treeview.uri:service/service-api`, true),
+										// iconPath: new vscode.ThemeIcon('selection')
+									});
+								}
+							}
+						}
+					}
+					if (childrens.length > 0) {
+						childrens.sort((a, b) => {
+							let keyA = a.range.start.line;
+							let keyB = b.range.start.line;
+							if (keyA > keyB) return 1;
+							if (keyA < keyB) return -1;
+							return 0;
+						});
+						items.push({
+							label: `${regex.label}`,
+							iconPath: new vscode.ThemeIcon('regex'),
+							tooltip: `${regex.label}`,
+							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+							resourceUri: vscode.Uri.parse(`highlight.regex.treeview.uri:${manager.active.tree.description}?${childrens.length}`, true),
+							childrens: childrens
+						});
+					}
+				}
+			}
+		}
+		this.items = items;
+		manager.active.tree.badge = {
+			value: items.length,
+			tooltip: ""
+		};
+		this.refresh();
+	}
+
+	collapseAll() {
+		log.debug(`Active: TreeView: collapseAll`);
+		let tmpItems = [];
+		for (let item of this.items) {
+			if (item.label[item.label.length - 1] == ' ') {
+				item.label = item.label.substr(0, item.label.length - 1);
+			}
+			else {
+				item.label += ' ';
+			}
+			tmpItems.push(item);
+		}
+		this.items = tmpItems;
+		this.refresh();
+	}
+
+	refresh() {
+		this._onDidChangeTreeData.fire();
+	}
+}; // class ActiveTreeDataProvider
+
+class MyFileDecorationProvider {
+	provideFileDecoration(uri, token) {
+	  if (uri.scheme === 'highlight.regex.treeview.uri') {
+		let badge = parseInt(uri.query);
+		if (badge > 99) {
+			badge = '∞';
+		}
+		return {
+			badge: `${badge}`,
+			tooltip: `${uri.query} occurence(s) found`,
+			// color: new vscode.ThemeColor('textLink.activeForeground'),
+			propagate: false // don't propagate to children elements
+		};
+	  }
+	  // I don't add any decoration for the rest of the files
+	  return undefined;
+	}
+}
+
+class Active {
+	constructor() {
+		this.treeDataProvider = new ActiveTreeDataProvider();
+		this.tree = vscode.window.createTreeView(`${extensionId}.view.active`, {
+			treeDataProvider: this.treeDataProvider,
+			showCollapseAll: true
+		});
+
+		const disposable = vscode.window.registerFileDecorationProvider(
+			new MyFileDecorationProvider()
+		);
+
+		this.tree.onDidChangeSelection((e) => {
+			if (e.selection && e.selection.length === 1) {
+				let select = e.selection[0];
+				if (select.context !== undefined && select.context == 'selectToEditor') {
+					vscode.window.activeTextEditor.selection = new vscode.Selection(
+						select.range.start,
+						select.range.end
+					);
+					vscode.window.activeTextEditor.revealRange(select.range,
+						vscode.TextEditorRevealType.InCenter);
+				}
+			}
+		})
+	}
+
+	update(activeEditor) {
+		// take all ranges from cached informations of scope parser
+		this.treeDataProvider.updateActiveEditor(activeEditor);
+	}
+
+}; // class Active
+
 class Manager {
 	constructor(context) {
 		this.context = context;
@@ -1682,6 +1902,7 @@ class Manager {
 		this.scopeManager = new ScopeManager(this.configuration);
 		this.setting = new Setting();
 		this.quickpick = new QuickPick(this.scopeManager, this.setting);
+		this.active = new Active();
 	}
 
 	/**
@@ -1712,9 +1933,9 @@ class Manager {
 			})
 		);
 		manager.context.subscriptions.push(
-			vscode.commands.registerCommand('highlight.regex.user.toggle', () => {
-				log.debug('command: highlight.regex.user.toggle');
-				manager.scopeManager.user.toggleDecorations();
+			vscode.commands.registerCommand('highlight.regex.global.toggle', () => {
+				log.debug('command: highlight.regex.global.toggle');
+				manager.scopeManager.global.toggleDecorations();
 			})
 		);
 		manager.context.subscriptions.push(
@@ -1736,43 +1957,42 @@ class Manager {
 	 */
 	subscriptionsHeaderView() {
 		//
-		// user
+		// global
 		//
-		manager.context.subscriptions.push(manager.scopeManager.user.view);
 		manager.context.subscriptions.push(
-			vscode.commands.registerCommand('highlight.regex.user.toggleCheckAll', async (e) => {
-				log.debug('command: highlight.regex.user.toggleCheckAll');
+			vscode.commands.registerCommand('highlight.regex.global.toggleCheckAll', async (e) => {
+				log.debug('command: highlight.regex.global.toggleCheckAll');
 				let count = 0;
-				for (let i = 0; i < manager.scopeManager.user.regexes.length; i++) {
-					if (manager.scopeManager.user.regexes[i].active) {
+				for (let i = 0; i < manager.scopeManager.global.regexes.length; i++) {
+					if (manager.scopeManager.global.regexes[i].active) {
 						count++;
 					}
 				}
-				if (count >= manager.scopeManager.user.regexes.length / 2) {
-					for (let i = 0; i < manager.scopeManager.user.regexes.length; i++) {
-						manager.scopeManager.user.regexes[i].active = false;
+				if (count >= manager.scopeManager.global.regexes.length / 2) {
+					for (let i = 0; i < manager.scopeManager.global.regexes.length; i++) {
+						manager.scopeManager.global.regexes[i].active = false;
 					}
 				}
 				else {
-					for (let i = 0; i < manager.scopeManager.user.regexes.length; i++) {
-						manager.scopeManager.user.regexes[i].active = true;
+					for (let i = 0; i < manager.scopeManager.global.regexes.length; i++) {
+						manager.scopeManager.global.regexes[i].active = true;
 					}
 				}
-				manager.scopeManager.user.treeDataProvider.loadConfigurations();
-				manager.scopeManager.user.treeDataProvider.refresh();
-				manager.scopeManager.user.resetDecorations();
-				manager.scopeManager.user.updateDecorations();
-				await manager.scopeManager.user.updateConfiguration();
+				manager.scopeManager.global.treeDataProvider.loadConfigurations();
+				manager.scopeManager.global.treeDataProvider.refresh();
+				manager.scopeManager.global.resetDecorations();
+				manager.scopeManager.global.updateDecorations();
+				await manager.scopeManager.global.updateConfiguration();
 			})
 		);
 		manager.context.subscriptions.push(
-			vscode.commands.registerCommand('highlight.regex.user.addEntry', async (e) => {
-				log.debug('command: highlight.regex.user.addEntry');
-				await manager.scopeManager.user.updateConfiguration();
+			vscode.commands.registerCommand('highlight.regex.global.addEntry', async (e) => {
+				log.debug('command: highlight.regex.global.addEntry');
+				await manager.scopeManager.global.updateConfiguration();
 				await vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile',
 					{
 						revealSetting: {
-							key: manager.scopeManager.user.propertyName,
+							key: manager.scopeManager.global.propertyName,
 							edit: true
 						}
 					}
@@ -1780,7 +2000,7 @@ class Manager {
 				// wait executeCommand can be not focus
 				await new Promise(resolve => setTimeout(resolve, 500));
 				const editor = vscode.window.activeTextEditor;
-				let next = manager.scopeManager.user.regexes.length > 0 ? ',' : '';
+				let next = manager.scopeManager.global.regexes.length > 0 ? ',' : '';
 				let snippet = JSON.parse(JSON.stringify(manager.configuration.defaultAddSnippet));
 				if (typeof snippet !== 'string') {
 					snippet = snippet.join('\n');
@@ -1789,21 +2009,20 @@ class Manager {
 			})
 		);
 		manager.context.subscriptions.push(
-			vscode.commands.registerCommand('highlight.regex.user.refreshEntries', (e) => {
-				log.debug('command: highlight.regex.user.refreshEntries');
-				manager.scopeManager.user.loadFromConfiguration();
+			vscode.commands.registerCommand('highlight.regex.global.refreshEntries', (e) => {
+				log.debug('command: highlight.regex.global.refreshEntries');
+				manager.scopeManager.global.loadFromConfiguration();
 			})
 		);
 		manager.context.subscriptions.push(
-			vscode.commands.registerCommand('highlight.regex.user.collapseAll', (e) => {
-				log.debug('command: highlight.regex.user.collapseAll');
-				manager.scopeManager.user.treeDataProvider.collapseAll();
+			vscode.commands.registerCommand('highlight.regex.global.collapseAll', (e) => {
+				log.debug('command: highlight.regex.global.collapseAll');
+				manager.scopeManager.global.treeDataProvider.collapseAll();
 			})
 		);
 		//
 		// workspace
 		//
-		manager.context.subscriptions.push(manager.scopeManager.workspace.view);
 		manager.context.subscriptions.push(
 			vscode.commands.registerCommand('highlight.regex.workspace.toggleCheckAll', async (e) => {
 				log.debug('command: highlight.regex.workspace.toggleCheckAll');
@@ -1872,25 +2091,25 @@ class Manager {
 	 */
 	subscriptionsItemView() {
 		//
-		// user
+		// global
 		//
 		manager.context.subscriptions.push(
-			vscode.commands.registerCommand('highlight.regex.user.editEntry', async (e) => {
-				log.debug('command: highlight.regex.user.editEntry');
+			vscode.commands.registerCommand('highlight.regex.global.editEntry', async (e) => {
+				log.debug('command: highlight.regex.global.editEntry');
 				try {
-					await manager.scopeManager.user.updateConfiguration();
+					await manager.scopeManager.global.updateConfiguration();
 					await manager.setting.open('workbench.action.openWorkspaceSettingsFile');
 					manager.setting.focus(e.path);
 				}
 				catch (error) {
-					log.error(`command: highlight.regex.user.editEntry: ${error.toString()}`);
+					log.error(`command: highlight.regex.global.editEntry: ${error.toString()}`);
 				}
 			})
 		);
 		manager.context.subscriptions.push(
-			vscode.commands.registerCommand('highlight.regex.user.deleteEntry', async (e) => {
-				log.debug('command: highlight.regex.user.deleteEntry');
-				await manager.scopeManager.user.updateConfiguration();
+			vscode.commands.registerCommand('highlight.regex.global.deleteEntry', async (e) => {
+				log.debug('command: highlight.regex.global.deleteEntry');
+				await manager.scopeManager.global.updateConfiguration();
 				// remove root path
 				let path = e.path.substring('/highlight.regex.regexes/'.length);
 
@@ -1920,54 +2139,54 @@ class Manager {
 						delete configuration[key];
 					}
 				}
-				deletePath(path, manager.scopeManager.user.regexes);
-				manager.scopeManager.user.treeDataProvider.loadConfigurations();
-				manager.scopeManager.user.treeDataProvider.refresh();
-				manager.scopeManager.user.resetDecorations();
-				manager.scopeManager.user.updateDecorations();
-				manager.scopeManager.user.updateConfiguration();
+				deletePath(path, manager.scopeManager.global.regexes);
+				manager.scopeManager.global.treeDataProvider.loadConfigurations();
+				manager.scopeManager.global.treeDataProvider.refresh();
+				manager.scopeManager.global.resetDecorations();
+				manager.scopeManager.global.updateDecorations();
+				manager.scopeManager.global.updateConfiguration();
 			})
 		);
 		manager.context.subscriptions.push(
-			vscode.commands.registerCommand('highlight.regex.user.moveUpEntry', async (e) => {
-				log.debug('command: highlight.regex.user.moveUpEntry');
+			vscode.commands.registerCommand('highlight.regex.global.moveUpEntry', async (e) => {
+				log.debug('command: highlight.regex.global.moveUpEntry');
 				// hide quickpick if visible
 				if (manager.quickpick.visible) {
 					manager.quickpick.quickpick.hide();
 				}
-				let index = manager.scopeManager.user.moveUpItem(e.index);
+				let index = manager.scopeManager.global.moveUpItem(e.index);
 				// select item after move
-				manager.scopeManager.user.tree.reveal(
-					manager.scopeManager.user.treeDataProvider.items[index],
+				manager.scopeManager.global.tree.reveal(
+					manager.scopeManager.global.treeDataProvider.items[index],
 					{ select: true }
 				);
 			})
 		);
 		manager.context.subscriptions.push(
-			vscode.commands.registerCommand('highlight.regex.user.moveDownEntry', async (e) => {
-				log.debug('command: highlight.regex.user.moveDownEntry');
+			vscode.commands.registerCommand('highlight.regex.global.moveDownEntry', async (e) => {
+				log.debug('command: highlight.regex.global.moveDownEntry');
 				// hide quickpick if visible
 				if (manager.quickpick.visible) {
 					manager.quickpick.quickpick.hide();
 				}
-				let index = manager.scopeManager.user.moveDownItem(e.index);
+				let index = manager.scopeManager.global.moveDownItem(e.index);
 				// select item after move
-				manager.scopeManager.user.tree.reveal(
-					manager.scopeManager.user.treeDataProvider.items[index],
+				manager.scopeManager.global.tree.reveal(
+					manager.scopeManager.global.treeDataProvider.items[index],
 					{ select: true }
 				);
 			})
 		);
 		manager.context.subscriptions.push(
-			vscode.commands.registerCommand('highlight.regex.user.copyToWorkspace', async (e) => {
-				log.debug('command: highlight.regex.user.copyToWorkspace');
+			vscode.commands.registerCommand('highlight.regex.global.copyToWorkspace', async (e) => {
+				log.debug('command: highlight.regex.global.copyToWorkspace');
 				// hide quickpick if visible
 				if (manager.quickpick.visible) {
 					manager.quickpick.quickpick.hide();
 				}
 				await manager.scopeManager.workspace.updateConfiguration();
-				// push user item to workspace
-				let regex = manager.scopeManager.user.regexes[e.index];
+				// push global item to workspace
+				let regex = manager.scopeManager.global.regexes[e.index];
 				manager.scopeManager.workspace.regexes.push(regex);
 				// get last index of new regex
 				let index = manager.scopeManager.workspace.regexes.length - 1;
@@ -2073,28 +2292,28 @@ class Manager {
 			})
 		);
 		manager.context.subscriptions.push(
-			vscode.commands.registerCommand('highlight.regex.workspace.copyToUser', async (e) => {
-				log.debug('command: highlight.regex.user.copyToWorkspace');
+			vscode.commands.registerCommand('highlight.regex.workspace.copyToGlobal', async (e) => {
+				log.debug('command: highlight.regex.global.copyToWorkspace');
 				// hide quickpick if visible
 				if (manager.quickpick.visible) {
 					manager.quickpick.quickpick.hide();
 				}
-				await manager.scopeManager.user.updateConfiguration();
-				// push workspace item to user
+				await manager.scopeManager.global.updateConfiguration();
+				// push workspace item to global
 				let regex = manager.scopeManager.workspace.regexes[e.index];
-				manager.scopeManager.user.regexes.push(regex);
+				manager.scopeManager.global.regexes.push(regex);
 				// get last index of new regex
-				let index = manager.scopeManager.user.regexes.length - 1;
+				let index = manager.scopeManager.global.regexes.length - 1;
 				// update tree view
-				manager.scopeManager.user.treeDataProvider.loadConfigurations();
-				manager.scopeManager.user.treeDataProvider.refresh();
+				manager.scopeManager.global.treeDataProvider.loadConfigurations();
+				manager.scopeManager.global.treeDataProvider.refresh();
 				// update decoration
-				manager.scopeManager.user.resetDecorations();
-				manager.scopeManager.user.updateDecorations();
-				manager.scopeManager.user.updateConfiguration();
+				manager.scopeManager.global.resetDecorations();
+				manager.scopeManager.global.updateDecorations();
+				manager.scopeManager.global.updateConfiguration();
 				// select item after copy
-				manager.scopeManager.user.tree.reveal(
-					manager.scopeManager.user.treeDataProvider.items[index],
+				manager.scopeManager.global.tree.reveal(
+					manager.scopeManager.global.treeDataProvider.items[index],
 					{ select: true }
 				);
 			})
@@ -2111,6 +2330,8 @@ function activate(context) {
 	manager.subscriptionsHeaderView();
 	manager.subscriptionsItemView();
 
+	let timeoutTimer = [];
+
 	// first update visible editors
 	for (const textEditor of vscode.window.visibleTextEditors) {
 		for (const scopeKey in manager.scopeManager.map) {
@@ -2118,9 +2339,14 @@ function activate(context) {
 		}
 	}
 
+	manager.active.update(vscode.window.activeTextEditor);
+
 	// event configuration change
 	vscode.workspace.onDidChangeConfiguration(event => {
 		log.debug('event: onDidChangeConfiguration');
+		for (const timerKey in timeoutTimer) {
+			clearTimeout(timeoutTimer[timerKey]);
+		}
 		manager.configuration = vscode.workspace.getConfiguration(extensionId);
 		for (const scopeKey in manager.scopeManager.map) {
 			log.debug(`event: onDidChangeConfiguration: ${manager.scopeManager.map[scopeKey].propertyName} updated`);
@@ -2179,7 +2405,6 @@ function activate(context) {
 		}
 	});
 
-	let timeoutTimer = [];
 	// trigger call update decoration
 	function triggerUpdate(editor) {
 		let key = editor.document.uri.toString(true) + editor.viewColumn;
@@ -2192,6 +2417,11 @@ function activate(context) {
 			}
 		}, manager.configuration.delay);
 	}
+
+	// change active editor
+	vscode.window.onDidChangeActiveTextEditor((editor) => {
+		manager.active.update(editor);
+	})
 }
 
 function desactivate() { }

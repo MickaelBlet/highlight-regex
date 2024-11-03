@@ -5,7 +5,7 @@
 ```jsonc
 "highlight.regex.regexes": [
     {
-        "languageIds": [ "plaintext" ],
+        "name": "Simple example",
         "regexes": [
             {
                 "regex": "simple (?<example>example) with (groups)",
@@ -36,7 +36,7 @@
 ```jsonc
 "highlight.regex.regexes": [
     {
-        "languageIds": [ "plaintext" ],
+        "name": "Simple hover message example",
         "regexes": [
             {
                 "regex": "simple (?<example>example) with (?<groups>groups)",
@@ -71,6 +71,8 @@
 ```jsonc
 "highlight.regex.regexes": [
     {
+        "name": "Member variable (c,cpp)",
+        "description": "Show member variable for c or cpp language",
         "languageIds": [ "c", "cpp" ],
         "regexes": [
             {
@@ -96,7 +98,7 @@
                 "decorations": [
                     {
                         "index": "var", // \w+_
-                        "fontWeight": "bold; text-shadow: 0px 0px 10px",
+                        "fontWeight": "bold; text-shadow: 0px 0px 10px", // custom css
                         "fontStyle": "italic"
                     },
                     {
