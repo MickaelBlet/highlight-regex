@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 2.0.2: November 04, 2024
+### Fix
+* Update tree active at update editor event.
+
 ## Version 2.0.1: November 04, 2024
 ### Enhancements
 * Readme tree delete demo.

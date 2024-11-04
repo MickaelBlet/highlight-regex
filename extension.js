@@ -2415,6 +2415,7 @@ function activate(context) {
 			for (const scopeKey in manager.scopeManager.map) {
 				manager.scopeManager.map[scopeKey].parser.updateDecorations(editor);
 			}
+			manager.active.update(vscode.window.activeTextEditor);
 		}, manager.configuration.delay);
 	}
 
