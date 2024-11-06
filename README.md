@@ -2,9 +2,9 @@
 
 Highlight (*decorate*) what you want with Regex in VS Code
 
-![demo](images/demo.gif)
-
 **Examples** available at [examples.md](examples.md)
+
+![demo](images/demo.gif)
 
 ## Choose by name(s)
 
@@ -20,7 +20,7 @@ Choose from tree your regexes.
 
 ![tree select workspace](images/treeSelectWorkspace.gif)
 
-## Edit
+### Edit
 
 Edit key(s) within workspace json settings.
 

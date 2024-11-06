@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 2.0.3: November 06, 2024
+### Fix
+* For loop without counter.
+
 ## Version 2.0.2: November 04, 2024
 ### Fix
 * Update tree active at update editor event.

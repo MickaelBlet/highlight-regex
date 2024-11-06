@@ -17,7 +17,7 @@ def generate_file(version: str, nb_recurse: int):
     with open(os.path.dirname(os.path.realpath(__file__)) + '/../package.json', 'r') as f:
         file_data = json.load(f)
     with open(os.path.dirname(os.path.realpath(__file__)) + '/../package.json', 'w') as f:
-        json.dump(file_data, f, separators=(',', ':'))
+        json.dump(file_data, f, indent='\t')
 
 if __name__ == '__main__':
     if len(sys.argv) == 3:
