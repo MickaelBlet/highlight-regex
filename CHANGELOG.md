@@ -1,5 +1,11 @@
 # Change Log
 
+## Version 2.0.4: November 07, 2024
+### Enhancements
+* Sort active treeview correctly.
+### Fix
+* Minimum vscode version.
+
 ## Version 2.0.3: November 06, 2024
 ### Fix
 * For loop without counter.

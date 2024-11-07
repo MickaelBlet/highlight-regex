@@ -2,10 +2,10 @@
 	"name": "highlight-regex",
 	"displayName": "Highlight - Regex",
 	"description": "Highlight (decorate) what you want with Regex",
-	"version": "2.0.3",
+	"version": "2.0.4",
 	"publisher": "mblet",
 	"engines": {
-		"vscode": "^1.72.0"
+		"vscode": "^1.80.0"
 	},
 	"main": "./extension.js",
 	"browser": "./extension.js",
@@ -370,19 +370,21 @@
 							"regexes": [
 								{
 									"regex": [
-										"[\"][^]*?(?:(?<!\\\\)[\"])",
+										"(?:[\"][^]*?(?:(?<!\\\\)[\"]))",
 										"|",
-										"/\\*[^]*?\\*/",
+										"(",
+										"(?:/\\*[^]*?\\*/)",
 										"|",
-										"//[^]*?(?:(?<!\\\\)$)"
+										"(?://[^]*?(?:(?<!\\\\)$))",
+										")"
 									],
 									"regexFlag": "gm",
 									"regexLimit": 25000,
 									"regexes": [
 										{
-											"index": 0,
+											"index": 1,
 											"regex": [
-												"\\b(TODO)\\b",
+												"\\b(?<todo>TODO)\\b",
 												"|",
 												"\\b(CRITICAL)\\b"
 											],
@@ -390,7 +392,7 @@
 											"regexLimit": 25000,
 											"decorations": [
 												{
-													"index": 1,
+													"index": "todo",
 													"borderRadius": "4px",
 													"fontWeight": "bold",
 													"overviewRulerColor": "#FF9900FF",

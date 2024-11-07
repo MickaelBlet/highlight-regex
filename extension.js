@@ -1809,10 +1809,10 @@ class ActiveTreeDataProvider {
 							}
 							if (childrens.length > 0) {
 								childrens.sort((a, b) => {
-									let keyA = a.range.start.line;
-									let keyB = b.range.start.line;
-									if (keyA > keyB) return 1;
-									if (keyA < keyB) return -1;
+									if (a.range.start.line > b.range.start.line) return 1;
+									if (a.range.start.line < b.range.start.line) return -1;
+									if (a.range.start.character > b.range.start.character) return 1;
+									if (a.range.start.character < b.range.start.character) return -1;
 									return 0;
 								});
 								items.push({

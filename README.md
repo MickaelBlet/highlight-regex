@@ -99,15 +99,19 @@ The first object level can include the following properties:
       {
         // regex to find all within comments
         "regex": [
-          "(/\\*[^]*?\\*/)",
+          "(?:[\"][^]*?(?:(?<!\\\\)[\"]))", // not in string
           "|",
-          "(//[^]*?(?:(?<!\\\\)$))"
+          "(",
+          "(?:/\\*[^]*?\\*/)",
+          "|",
+          "(?://[^]*?(?:(?<!\\\\)$))",
+          ")"
         ],
         "regexFlag": "gm",
         "regexLimit": 25000,
         "regexes": [
           {
-            "index": 0, // 0 for take all regex match (this is optionnal)
+            "index": 1, // 1 for take comments match
             "regex": [
               "\\b(?<todo>TODO)\\b",
               "|",
