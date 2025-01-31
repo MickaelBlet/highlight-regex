@@ -823,6 +823,10 @@ class Parser {
 			}
 		}
 	}
+
+	clearCache() {
+		this.cacheEditors = [];
+	}
 }; // class Parser
 
 class TreeDataProvider {
@@ -1084,6 +1088,11 @@ class Scope {
 		this.updateDecorations();
 		this.updateConfiguration();
 		return index;
+	}
+
+	clearCaches() {
+		log.debug(`${this.name}: clearCaches`);
+		this.parser.clearCache();
 	}
 
 	resetDecorations() {
@@ -1911,6 +1920,41 @@ class Manager {
 	}
 
 	/**
+	 * Add clear cache on context
+	 */
+	subscriptionsCache() {
+		manager.context.subscriptions.push(
+			vscode.commands.registerCommand('highlight.regex.clear.cache', () => {
+				log.debug('command: highlight.regex.clear.cache');
+				for (const scopeKey in manager.scopeManager.map) {
+					if (manager.scopeManager.map.hasOwnProperty(scopeKey)) {
+						manager.scopeManager.map[scopeKey].clearCaches();
+						manager.scopeManager.map[scopeKey].resetDecorations();
+						manager.scopeManager.map[scopeKey].updateDecorations();
+					}
+				}
+			})
+		);
+	}
+
+	/**
+	 * Add refresh on context
+	 */
+	subscriptionsRefresh() {
+		manager.context.subscriptions.push(
+			vscode.commands.registerCommand('highlight.regex.refresh', () => {
+				log.debug('command: highlight.regex.refresh');
+				for (const scopeKey in manager.scopeManager.map) {
+					if (manager.scopeManager.map.hasOwnProperty(scopeKey)) {
+						manager.scopeManager.map[scopeKey].resetDecorations();
+						manager.scopeManager.map[scopeKey].updateDecorations();
+					}
+				}
+			})
+		);
+	}
+
+	/**
 	 * Add quickpick actions on context
 	 */
 	subscriptionsQuickPick() {
@@ -2332,6 +2376,8 @@ function activate(context) {
 	// initialize global log
 	log = vscode.window.createOutputChannel(extensionName, { log: true });
 	manager = new Manager(context);
+	manager.subscriptionsCache();
+	manager.subscriptionsRefresh();
 	manager.subscriptionsQuickPick();
 	manager.subscriptionsToggle();
 	manager.subscriptionsHeaderView();

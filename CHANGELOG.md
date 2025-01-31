@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 2.1.0: January 31, 2025
+### New Features
+* Add `highlight.regex.clear.cache` command
+* Add `highlight.regex.refresh` command
+
 ## Version 2.0.4: November 07, 2024
 ### Enhancements
 * Sort active treeview correctly.

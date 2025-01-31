@@ -2,7 +2,7 @@
 	"name": "highlight-regex",
 	"displayName": "Highlight - Regex",
 	"description": "Highlight (decorate) what you want with Regex",
-	"version": "2.0.4",
+	"version": "2.1.0",
 	"publisher": "mblet",
 	"engines": {
 		"vscode": "^1.80.0"
@@ -193,6 +193,14 @@
 			{
 				"command": "highlight.regex.choose.names",
 				"title": "Highlight Regex: Choose by name(s)"
+			},
+			{
+				"command": "highlight.regex.clear.cache",
+				"title": "Highlight Regex: Clear Cache"
+			},
+			{
+				"command": "highlight.regex.refresh",
+				"title": "Highlight Regex: Refresh"
 			},
 			{
 				"command": "highlight.regex.global.toggleCheckAll",

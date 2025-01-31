@@ -49,6 +49,8 @@ Navigate through regex matches in the active editor.
 |Name|Command|Description|
 |---|---|---|
 |**Highlight Regex: Choose by name(s)**|*highlight.regex.choose.names*|Activate/Desactivate specific regexes|
+|**Highlight Regex: Clear Cache**|*highlight.regex.clear.cache*|Remove the cache and refresh all scopes regexes|
+|**Highlight Regex: Refresh**|*highlight.regex.refresh*|Refresh all scopes regexes at visible(s) editor(s)|
 |**Highlight Regex: Toggle**|*highlight.regex.toggle*|Activate/Desactivate all scopes regexes|
 |**Highlight Regex: Global Toggle**|*highlight.regex.global.toggle*|Activate/Desactivate all regexes of global scope|
 |**Highlight Regex: Workspace Toggle**|*highlight.regex.workspace.toggle*|Activate/Desactivate all regexes of workspace scope|
