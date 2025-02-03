@@ -410,6 +410,26 @@ class Parser {
 
 							start = i + 1;
 						}
+						// is named backreference
+						// NOTE: In unicode-unaware mode, this CAN (but shouldn't) cause issues (`\k` resolves to literal `k` unless a group matches)
+						//       https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Named_backreference#description
+						if ('\\' === text[i] && 'k' === text[i + 1] && '<' === text[i + 2]) {
+							i += 3; // skip `\k<`
+
+							let groupName = "";
+							for (let j = i; j < text.length; j++) {
+								i++;
+								if (text[j] === '>') {
+									break;
+								}
+								groupName += text[j];
+							}
+
+							let index = matchNamedToReal[groupName];
+							newStrRegex += `\\${index.toString()}`;
+
+							start = i + 1;
+						}
 					}
 					if (start > 0 && text.length > (end + 1) && text.length - start > 0) {
 						addSimpleGroup(text.substr(start, text.length - start));
