@@ -410,26 +410,6 @@ class Parser {
 
 							start = i + 1;
 						}
-						// is named backreference
-						// NOTE: In unicode-unaware mode, this CAN (but shouldn't) cause issues (`\k` resolves to literal `k` unless a group matches)
-						//       https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Named_backreference#description
-						if ('\\' === text[i] && 'k' === text[i + 1] && '<' === text[i + 2]) {
-							i += 3; // skip `\k<`
-
-							let groupName = "";
-							for (let j = i; j < text.length; j++) {
-								i++;
-								if (text[j] === '>') {
-									break;
-								}
-								groupName += text[j];
-							}
-
-							let index = matchNamedToReal[groupName];
-							newStrRegex += `\\${index.toString()}`;
-
-							start = i + 1;
-						}
 					}
 					if (start > 0 && text.length > (end + 1) && text.length - start > 0) {
 						addSimpleGroup(text.substr(start, text.length - start));
@@ -445,9 +425,30 @@ class Parser {
 					}
 					findGroups(splitRegex[i]);
 				}
-
+				// replace named backreference by index
+				let backreferenceRegex = ""
+				for (let i = 0; i < newStrRegex.length; i++) {
+					// is named backreference
+					// NOTE: In unicode-unaware mode, this CAN (but shouldn't) cause issues (`\k` resolves to literal `k` unless a group matches)
+					//       https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Named_backreference#description
+					if ('\\' === newStrRegex[i] && 'k' === newStrRegex[i + 1] && '<' === newStrRegex[i + 2]) {
+						i += 3; // skip `\k<`
+						let start = i;
+						for (let j = i; j < newStrRegex.length; j++) {
+							i++;
+							if (newStrRegex[j] === '>') {
+								break;
+							}
+						}
+						backreferenceRegex += `\\${matchNamedToReal[newStrRegex.substr(start, i - start - 1)]}`;
+						i--;
+					}
+					else {
+						backreferenceRegex += newStrRegex[i];
+					}
+				}
 				// rollback replace all '\\'
-				newStrRegex = newStrRegex.replace(/####B4CKSL4SHB4CKSL4SH####/gm, reloadBackSlash);
+				newStrRegex = backreferenceRegex.replace(/####B4CKSL4SHB4CKSL4SH####/gm, reloadBackSlash);
 				return {
 					sRegex: newStrRegex,
 					matchIndexToReal,
@@ -1324,7 +1325,7 @@ class QuickPick {
 						let inActiveEditor = true;
 						if (activeEditor) {
 							let languageRegex = new RegExp((regexes.languageRegex) ? regexes.languageRegex : '.*', '');
-								languageRegex.test();
+							languageRegex.test();
 							let filenameRegex = new RegExp((regexes.filenameRegex) ? regexes.filenameRegex : '.*', '');
 							filenameRegex.test();
 							// check language
@@ -1876,20 +1877,20 @@ class ActiveTreeDataProvider {
 
 class ActiveFileDecorationProvider {
 	provideFileDecoration(uri, token) {
-	  if (uri.scheme === 'highlight.regex.treeview.uri') {
-		let badge = parseInt(uri.query);
-		if (badge > 99) {
-			badge = '∞';
+		if (uri.scheme === 'highlight.regex.treeview.uri') {
+			let badge = parseInt(uri.query);
+			if (badge > 99) {
+				badge = '∞';
+			}
+			return {
+				badge: `${badge}`,
+				tooltip: `${uri.query} occurence(s) found`,
+				// color: new vscode.ThemeColor('textLink.activeForeground'),
+				propagate: false // don't propagate to children elements
+			};
 		}
-		return {
-			badge: `${badge}`,
-			tooltip: `${uri.query} occurence(s) found`,
-			// color: new vscode.ThemeColor('textLink.activeForeground'),
-			propagate: false // don't propagate to children elements
-		};
-	  }
-	  // I don't add any decoration for the rest of the files
-	  return undefined;
+		// I don't add any decoration for the rest of the files
+		return undefined;
 	}
 }
 

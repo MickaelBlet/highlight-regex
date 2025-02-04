@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 2.1.1: February 04, 2025
+### Fix
+* Usage of named backreferences.
+
 ## Version 2.1.0: January 31, 2025
 ### New Features
 * Add `highlight.regex.clear.cache` command

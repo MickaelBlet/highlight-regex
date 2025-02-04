@@ -2,7 +2,7 @@
 	"name": "highlight-regex",
 	"displayName": "Highlight - Regex",
 	"description": "Highlight (decorate) what you want with Regex",
-	"version": "2.1.0",
+	"version": "2.1.1",
 	"publisher": "mblet",
 	"engines": {
 		"vscode": "^1.80.0"
