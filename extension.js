@@ -425,7 +425,7 @@ class Parser {
 					}
 					findGroups(splitRegex[i]);
 				}
-				// replace named backreference by index
+				// replace backreference by index
 				let backreferenceRegex = ""
 				for (let i = 0; i < newStrRegex.length; i++) {
 					// is named backreference
@@ -434,13 +434,23 @@ class Parser {
 					if ('\\' === newStrRegex[i] && 'k' === newStrRegex[i + 1] && '<' === newStrRegex[i + 2]) {
 						i += 3; // skip `\k<`
 						let start = i;
-						for (let j = i; j < newStrRegex.length; j++) {
-							i++;
-							if (newStrRegex[j] === '>') {
+						for (; i < newStrRegex.length; i++) {
+							if (newStrRegex[i] === '>') {
 								break;
 							}
 						}
-						backreferenceRegex += `\\${matchNamedToReal[newStrRegex.substr(start, i - start - 1)]}`;
+						backreferenceRegex += `\\${matchNamedToReal[newStrRegex.substr(start, i - start)]}`;
+					}
+					// is backreference
+					else if ('\\' === newStrRegex[i] && newStrRegex[i + 1] >= '0' && newStrRegex[i + 1] <= '9') {
+						i++; // skip '\'
+						let start = i;
+						for (; i < newStrRegex.length; i++) {
+							if (newStrRegex[i] < '0' || newStrRegex[i] > '9') {
+								break;
+							}
+						}
+						backreferenceRegex += `\\${matchIndexToReal[parseInt(newStrRegex.substr(start, i - start))]}`;
 						i--;
 					}
 					else {
@@ -2477,7 +2487,7 @@ function activate(context) {
 		let isNotLogOuput = false;
 		for (let i = 0; i < openEditors.length; i++) {
 			const textEditor = openEditors[i];
-			if ('output' != textEditor.document.uri.scheme || !textEditor.document.uri.toString(true).includes('Highlight regex')) {
+			if ('output' != textEditor.document.uri.scheme || !textEditor.document.uri.toString(true).toLowerCase().includes('highlight regex')) {
 				isNotLogOuput = true;
 				triggerUpdate(textEditor);
 			}

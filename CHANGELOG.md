@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 2.1.2: February 10, 2025
+### Fix
+* Usage of backreferences.
+
 ## Version 2.1.1: February 04, 2025
 ### Fix
 * Usage of named backreferences.
