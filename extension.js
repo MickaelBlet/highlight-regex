@@ -1147,12 +1147,40 @@ class Scope {
 		this.parser.toggle(vscode.window.visibleTextEditors);
 	}
 
-	async updateConfiguration() {
+	getConfigurationTarget() {
+		let inspect = this.configuration.inspect(this.propertyName.substring(extensionId.length + 1));
+		let scopes = [
+			['workspaceFolderLanguageValue', vscode.ConfigurationTarget.WorkspaceFolder],
+			['workspaceLanguageValue', vscode.ConfigurationTarget.Workspace],
+			['globalLanguageValue', vscode.ConfigurationTarget.Global],
+			['defaultLanguageValue', vscode.ConfigurationTarget.Workspace],
+			['workspaceFolderValue', vscode.ConfigurationTarget.WorkspaceFolder],
+			['workspaceValue', vscode.ConfigurationTarget.Workspace],
+			['globalValue', vscode.ConfigurationTarget.Global],
+			['defaultValue', vscode.ConfigurationTarget.Global]
+		];
+		let scope = vscode.ConfigurationTarget.Workspace;
+		for (let i = 0; i < scopes.length; i++) {
+			const language = scopes[i];
+			if (language[0] in inspect && inspect[language[0]] !== undefined) {
+				scope = language[1];
+				break;
+			}
+		}
+		if (this.name == 'workspace') {
+			if (scope == vscode.ConfigurationTarget.Global) {
+				scope = vscode.ConfigurationTarget.Workspace;
+			}
+		}
+		return scope;
+	}
+
+	async updateConfiguration(configurationTarget = this.getConfigurationTarget()) {
 		this.configurationChangeEvent = false;
 		await vscode.workspace.getConfiguration().update(
 			this.propertyName,
 			this.regexes,
-			vscode.ConfigurationTarget.Workspace
+			configurationTarget
 		);
 		this.configurationChangeEvent = true;
 	}
@@ -2071,14 +2099,69 @@ class Manager {
 			vscode.commands.registerCommand('highlight.regex.global.addEntry', async (e) => {
 				log.debug('command: highlight.regex.global.addEntry');
 				await manager.scopeManager.global.updateConfiguration();
-				await vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile',
-					{
-						revealSetting: {
-							key: manager.scopeManager.global.propertyName,
-							edit: true
+				// run on remote
+				if (vscode.env.remoteName !== undefined && manager.scopeManager.global.getConfigurationTarget() != vscode.ConfigurationTarget.Workspace) {
+					await manager.setting.open('workbench.action.openRemoteSettingsFile');
+					try {
+						manager.setting.focus('/highlight.regex.regexes');
+						await vscode.commands.executeCommand('workbench.action.openRemoteSettingsFile',
+							{
+								revealSetting: {
+									key: manager.scopeManager.global.propertyName,
+									edit: true
+								}
+							}
+						);
+					}
+					catch (error) {
+						await manager.setting.open('workbench.action.openSettingsJson');
+						try {
+							manager.setting.focus('/highlight.regex.regexes');
+							await vscode.commands.executeCommand('workbench.action.openSettingsJson',
+								{
+									revealSetting: {
+										key: manager.scopeManager.global.propertyName,
+										edit: true
+									}
+								}
+							);
+						}
+						catch (error) {
+							await manager.scopeManager.global.updateConfiguration(vscode.ConfigurationTarget.Workspace);
+							await vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile',
+								{
+									revealSetting: {
+										key: manager.scopeManager.global.propertyName,
+										edit: true
+									}
+								}
+							);
 						}
 					}
-				);
+				}
+				else {
+					if (manager.scopeManager.global.getConfigurationTarget() != vscode.ConfigurationTarget.Workspace) {
+						await vscode.commands.executeCommand('workbench.action.openSettingsJson',
+							{
+								revealSetting: {
+									key: manager.scopeManager.global.propertyName,
+									edit: true
+								}
+							}
+						);
+					}
+					else {
+						await vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile',
+							{
+								revealSetting: {
+									key: manager.scopeManager.global.propertyName,
+									edit: true
+								}
+							}
+						);
+					}
+				}
+
 				// wait executeCommand can be not focus
 				await new Promise(resolve => setTimeout(resolve, 500));
 				const editor = vscode.window.activeTextEditor;
@@ -2177,11 +2260,29 @@ class Manager {
 		//
 		manager.context.subscriptions.push(
 			vscode.commands.registerCommand('highlight.regex.global.editEntry', async (e) => {
-				log.debug('command: highlight.regex.global.editEntry');
+				log.debug(`command: highlight.regex.global.editEntry: ${e.path}`);
 				try {
 					await manager.scopeManager.global.updateConfiguration();
-					await manager.setting.open('workbench.action.openWorkspaceSettingsFile');
-					manager.setting.focus(e.path);
+					// run on remote
+					if (vscode.env.remoteName !== undefined && manager.scopeManager.global.getConfigurationTarget() != vscode.ConfigurationTarget.Workspace) {
+						await manager.setting.open('workbench.action.openRemoteSettingsFile');
+						try {
+							manager.setting.focus(e.path);
+						}
+						catch (error) {
+							await manager.setting.open('workbench.action.openSettingsJson');
+							manager.setting.focus(e.path);
+						}
+					}
+					else {
+						if (manager.scopeManager.global.getConfigurationTarget() != vscode.ConfigurationTarget.Workspace) {
+							await manager.setting.open('workbench.action.openSettingsJson');
+						}
+						else {
+							await manager.setting.open('workbench.action.openWorkspaceSettingsFile');
+						}
+						manager.setting.focus(e.path);
+					}
 				}
 				catch (error) {
 					log.error(`command: highlight.regex.global.editEntry: ${error.toString()}`);
@@ -2222,11 +2323,22 @@ class Manager {
 					}
 				}
 				deletePath(path, manager.scopeManager.global.regexes);
-				manager.scopeManager.global.treeDataProvider.loadConfigurations();
-				manager.scopeManager.global.treeDataProvider.refresh();
-				manager.scopeManager.global.resetDecorations();
-				manager.scopeManager.global.updateDecorations();
-				manager.scopeManager.global.updateConfiguration();
+				if (manager.scopeManager.global.regexes?.length == 0) {
+					manager.scopeManager.global.resetDecorations();
+					manager.scopeManager.global.regexes = undefined;
+					await manager.scopeManager.global.updateConfiguration();
+					manager.scopeManager.global.regexes = vscode.workspace.getConfiguration(extensionId).regexes;
+					manager.scopeManager.global.treeDataProvider.loadConfigurations();
+					manager.scopeManager.global.treeDataProvider.refresh();
+					manager.scopeManager.global.updateDecorations();
+				}
+				else {
+					manager.scopeManager.global.treeDataProvider.loadConfigurations();
+					manager.scopeManager.global.treeDataProvider.refresh();
+					manager.scopeManager.global.resetDecorations();
+					manager.scopeManager.global.updateDecorations();
+					manager.scopeManager.global.updateConfiguration();
+				}
 			})
 		);
 		manager.context.subscriptions.push(
@@ -2336,11 +2448,22 @@ class Manager {
 					}
 				}
 				deletePath(path, manager.scopeManager.workspace.regexes);
-				manager.scopeManager.workspace.treeDataProvider.loadConfigurations();
-				manager.scopeManager.workspace.treeDataProvider.refresh();
-				manager.scopeManager.workspace.resetDecorations();
-				manager.scopeManager.workspace.updateDecorations();
-				manager.scopeManager.workspace.updateConfiguration();
+				if (manager.scopeManager.workspace.regexes?.length == 0) {
+					manager.scopeManager.workspace.resetDecorations();
+					manager.scopeManager.workspace.regexes = undefined;
+					await manager.scopeManager.workspace.updateConfiguration();
+					manager.scopeManager.workspace.regexes = vscode.workspace.getConfiguration(extensionId).workspace.regexes;
+					manager.scopeManager.workspace.treeDataProvider.loadConfigurations();
+					manager.scopeManager.workspace.treeDataProvider.refresh();
+					manager.scopeManager.workspace.updateDecorations();
+				}
+				else {
+					manager.scopeManager.workspace.treeDataProvider.loadConfigurations();
+					manager.scopeManager.workspace.treeDataProvider.refresh();
+					manager.scopeManager.workspace.resetDecorations();
+					manager.scopeManager.workspace.updateDecorations();
+					manager.scopeManager.workspace.updateConfiguration();
+				}
 			})
 		);
 		manager.context.subscriptions.push(

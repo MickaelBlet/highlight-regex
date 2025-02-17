@@ -2,7 +2,7 @@
 	"name": "highlight-regex",
 	"displayName": "Highlight - Regex",
 	"description": "Highlight (decorate) what you want with Regex",
-	"version": "2.1.2",
+	"version": "2.2.0",
 	"publisher": "mblet",
 	"engines": {
 		"vscode": "^1.80.0"
@@ -378,7 +378,7 @@
 							"regexes": [
 								{
 									"regex": [
-										"(?:[\"][^]*?(?:(?<!\\\\)[\"]))",
+										"(?:(['\"])[^]*?(?:(?<!\\\\)\\1))",
 										"|",
 										"(",
 										"(?:/\\*[^]*?\\*/)",
@@ -390,7 +390,7 @@
 									"regexLimit": 25000,
 									"regexes": [
 										{
-											"index": 1,
+											"index": 2,
 											"regex": [
 												"\\b(?<todo>TODO)\\b",
 												"|",
@@ -494,14 +494,6 @@
 									"type": "object",
 									"additionalProperties": false,
 									"properties": {
-										"index": {
-											"type": [
-												"number",
-												"string"
-											],
-											"title": "Index",
-											"description": "Index or name of regex group"
-										},
 										"regex": {
 											"type": [
 												"string",
@@ -4829,14 +4821,6 @@
 									"type": "object",
 									"additionalProperties": false,
 									"properties": {
-										"index": {
-											"type": [
-												"number",
-												"string"
-											],
-											"title": "Index",
-											"description": "Index or name of regex group"
-										},
 										"regex": {
 											"type": [
 												"string",

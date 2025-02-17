@@ -101,7 +101,7 @@ The first object level can include the following properties:
       {
         // regex to find all within comments
         "regex": [
-          "(?:[\"][^]*?(?:(?<!\\\\)[\"]))", // not in string
+          "(?:(['\"])[^]*?(?:(?<!\\\\)\\1))", // not in string
           "|",
           "(",
           "(?:/\\*[^]*?\\*/)",

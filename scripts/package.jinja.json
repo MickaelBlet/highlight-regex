@@ -308,7 +308,7 @@
 			"regexes": [
 				{
 					"regex": [
-						"(?:[\"][^]*?(?:(?<!\\\\)[\"]))",
+						"(?:(['\"])[^]*?(?:(?<!\\\\)\\1))",
 						"|",
 						"(",
 						"(?:/\\*[^]*?\\*/)",
@@ -320,7 +320,7 @@
 					"regexLimit": 25000,
 					"regexes": [
 						{
-							"index": 1,
+							"index": 2,
 							"regex": [
 								"\\b(?<todo>TODO)\\b",
 								"|",
@@ -431,6 +431,7 @@
 					"type": "object",
 					"additionalProperties": false,
 					"properties": {
+						{% if i > 0 %}
 						"index": {
 							"type": [
 								"number",
@@ -439,6 +440,7 @@
 							"title": "Index",
 							"description": "Index or name of regex group"
 						},
+						{% endif %}
 						"regex": {
 							"type": [
 								"string",

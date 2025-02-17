@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 2.2.0: February 15, 2025
+### Enhancements
+* Use global tree manager with user/remote setting.
+
 ## Version 2.1.2: February 10, 2025
 ### Fix
 * Usage of backreferences.
