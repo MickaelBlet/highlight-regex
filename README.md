@@ -113,7 +113,7 @@ The first object level can include the following properties:
         "regexLimit": 25000,
         "regexes": [
           {
-            "index": 1, // 1 for take comments match
+            "index": 2, // 2 for take comments match
             "regex": [
               "\\b(?<todo>TODO)\\b",
               "|",
