@@ -27,6 +27,7 @@ const extensionId = 'highlight.regex';
 const extensionName = 'Highlight regex';
 let log = undefined;
 let manager = undefined;
+let globalSettingRemote = undefined;
 
 class Parser {
 
@@ -1058,14 +1059,22 @@ class Scope {
 			['defaultValue', 'default']
 		];
 		let scopeStr = "undefined";
-		for (let i = 0; i < scopes.length; i++) {
-			const language = scopes[i];
-			if (language[0] in inspect && inspect[language[0]] !== undefined) {
-				scopeStr = language[1];
-				break;
-			}
+		if ('global' == this.name && globalSettingRemote) {
+			this.tree.description = `remote settings`;
 		}
-		this.tree.description = `${scopeStr} settings`;
+		else {
+			for (let i = 0; i < scopes.length; i++) {
+				const language = scopes[i];
+				if (language[0] in inspect && inspect[language[0]] !== undefined) {
+					scopeStr = language[1];
+					break;
+				}
+			}
+			if (vscode.env.remoteName !== undefined && 'global' == this.name && globalSettingRemote === undefined) {
+				scopeStr+='/remote?';
+			}
+			this.tree.description = `${scopeStr} settings`;
+		}
 	}
 
 	loadFromConfiguration() {
@@ -1260,19 +1269,28 @@ class QuickPick {
 			log.debug('quickpick: onDidTriggerItemButton');
 			if (event.button.tooltip == 'Edit') {
 				let path = `/${that.scopeManager.map[event.item.scope].propertyName}/[${event.item.index}]`;
+				// is global setting
 				if (path.startsWith("/highlight.regex.regexes")) {
 					await manager.scopeManager.global.updateConfiguration();
+					// first check remote setting
+					if (vscode.env.remoteName !== undefined && globalSettingRemote === undefined) {
+						globalSettingRemote = await manager.setting.useRemoteSetting();
+						log.debug(`globalSettingRemote: ${globalSettingRemote}`);
+						manager.scopeManager.global.updateTreeTitle();
+					}
+					if (vscode.env.remoteName !== undefined && globalSettingRemote) {
+						await manager.setting.focus('workbench.action.openRemoteSettingsFile', path);
+					}
+					else if (manager.scopeManager.global.getConfigurationTarget() != vscode.ConfigurationTarget.Workspace) {
+						await manager.setting.focus('workbench.action.openSettingsJson', path);
+					}
+					else {
+						await manager.setting.focus('workbench.action.openWorkspaceSettingsFile', path);
+					}
 				}
 				else {
 					await manager.scopeManager.workspace.updateConfiguration();
-				}
-
-				try {
-					await manager.setting.open('workbench.action.openWorkspaceSettingsFile');
-					manager.setting.focus(path);
-				}
-				catch (error) {
-					log.error(`quickpick: onDidTriggerItemButton: ${error.toString()}`);
+					await manager.setting.focus('workbench.action.openWorkspaceSettingsFile', path);
 				}
 			}
 		});
@@ -1750,34 +1768,71 @@ class Setting {
 	constructor() {
 		this.uris = [];
 	}
-	async open(cmd = 'workbench.action.openWorkspaceSettingsFile', args = {}) {
-		// open setting and focus editor
-		if (!(cmd in this.uris)) {
-			await vscode.commands.executeCommand(cmd, args);
-			// wait executeCommand can be not focus
-			await new Promise(resolve => setTimeout(resolve, 500));
-			// get text from focused editor
-			const editor = vscode.window.activeTextEditor;
-			this.uris[cmd] = editor.document.uri;
-		}
-		else {
-			log.debug(this.uris[cmd].toString(true));
-			const doc = await vscode.workspace.openTextDocument(this.uris[cmd]);
-			await vscode.window.showTextDocument(doc, { preview: false });
+	async close(cmd) {
+		const tabs = vscode.window.tabGroups.all.map(tg => tg.tabs).flat();
+		const index = tabs.findIndex(tab => tab.input instanceof vscode.TabInputText && tab.input.uri.path === this.uris[cmd].path);
+		if (index !== -1) {
+			await vscode.window.tabGroups.close(tabs[index]);
 		}
 	}
-	focus(path) {
-		// get text from focused editor
-		const editor = vscode.window.activeTextEditor;
-		const text = editor.document.getText();
-
-		let jsoncSetting = new JsoncSettingParser(text);
-		if (path in jsoncSetting.ranges) {
-			editor.selection = new vscode.Selection(editor.document.positionAt(jsoncSetting.ranges[path].start), editor.document.positionAt(jsoncSetting.ranges[path].end));
-			editor.revealRange(new vscode.Range(editor.document.positionAt(jsoncSetting.ranges[path].start), editor.document.positionAt(jsoncSetting.ranges[path].end)), vscode.TextEditorRevealType.InCenter)
+	async focus(cmd, path) {
+		// open setting and focus editor
+		if (!(cmd in this.uris)) {
+			await vscode.commands.executeCommand(cmd, {});
+			// wait executeCommand can be not focus
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			// get informations from focused editor
+			const editor = vscode.window.activeTextEditor;
+			this.uris[cmd] = editor.document.uri;
+			const text = editor.document.getText();
+			let jsoncSetting = new JsoncSettingParser(text);
+			if (path in jsoncSetting.ranges) {
+				editor.selection = new vscode.Selection(editor.document.positionAt(jsoncSetting.ranges[path].start), editor.document.positionAt(jsoncSetting.ranges[path].end));
+				editor.revealRange(new vscode.Range(editor.document.positionAt(jsoncSetting.ranges[path].start), editor.document.positionAt(jsoncSetting.ranges[path].end)), vscode.TextEditorRevealType.InCenter);
+			}
 		}
 		else {
-			throw `"${path}" path not found on json setting`;
+			const text = `${await vscode.workspace.fs.readFile(this.uris[cmd])}`;
+			let jsoncSetting = new JsoncSettingParser(text);
+			if (path in jsoncSetting.ranges) {
+				const doc = await vscode.workspace.openTextDocument(this.uris[cmd]);
+				const editor = await vscode.window.showTextDocument(doc, {preview: false});
+				editor.selection = new vscode.Selection(editor.document.positionAt(jsoncSetting.ranges[path].start), editor.document.positionAt(jsoncSetting.ranges[path].end));
+				editor.revealRange(new vscode.Range(editor.document.positionAt(jsoncSetting.ranges[path].start), editor.document.positionAt(jsoncSetting.ranges[path].end)), vscode.TextEditorRevealType.InCenter);
+			}
+		}
+	}
+
+	async useRemoteSetting() {
+		// open setting and focus editor
+		const cmd = 'workbench.action.openRemoteSettingsFile';
+		if (!(cmd in this.uris)) {
+			await vscode.commands.executeCommand(cmd, {});
+			// wait executeCommand can be not focus
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			// get informations from focused editor
+			while (vscode.window.activeTextEditor == undefined ||
+				   vscode.window.activeTextEditor == null ||
+				   vscode.window.activeTextEditor?.document?.languageId != 'jsonc') {
+				await new Promise(resolve => setTimeout(resolve, 100));
+				log.debug(`wait...`);
+			}
+			log.debug(`Remote uri: ${vscode.window.activeTextEditor.document.uri.toString(true)}`);
+			this.uris[cmd] = vscode.window.activeTextEditor.document.uri;
+			let jsoncSetting = new JsoncSettingParser(vscode.window.activeTextEditor.document.getText());
+			await this.close(cmd);
+			if ('/highlight.regex.regexes' in jsoncSetting.ranges) {
+				return true;
+			}
+			return false;
+		}
+		else {
+			const text = `${await vscode.workspace.fs.readFile(this.uris[cmd])}`;
+			let jsoncSetting = new JsoncSettingParser(text);
+			if ('/highlight.regex.regexes' in jsoncSetting.ranges) {
+				return true;
+			}
+			return false;
 		}
 	}
 }; // class JsonSetting
@@ -2098,12 +2153,16 @@ class Manager {
 		manager.context.subscriptions.push(
 			vscode.commands.registerCommand('highlight.regex.global.addEntry', async (e) => {
 				log.debug('command: highlight.regex.global.addEntry');
-				await manager.scopeManager.global.updateConfiguration();
-				// run on remote
-				if (vscode.env.remoteName !== undefined && manager.scopeManager.global.getConfigurationTarget() != vscode.ConfigurationTarget.Workspace) {
-					await manager.setting.open('workbench.action.openRemoteSettingsFile');
-					try {
-						manager.setting.focus('/highlight.regex.regexes');
+				try {
+					await manager.scopeManager.global.updateConfiguration();
+					// first check remote setting
+					if (vscode.env.remoteName !== undefined && globalSettingRemote === undefined) {
+						globalSettingRemote = await manager.setting.useRemoteSetting();
+						log.debug(`globalSettingRemote: ${globalSettingRemote}`);
+						manager.scopeManager.global.updateTreeTitle();
+					}
+					// run on remote
+					if (vscode.env.remoteName !== undefined && globalSettingRemote) {
 						await vscode.commands.executeCommand('workbench.action.openRemoteSettingsFile',
 							{
 								revealSetting: {
@@ -2113,10 +2172,8 @@ class Manager {
 							}
 						);
 					}
-					catch (error) {
-						await manager.setting.open('workbench.action.openSettingsJson');
-						try {
-							manager.setting.focus('/highlight.regex.regexes');
+					else {
+						if (manager.scopeManager.global.getConfigurationTarget() != vscode.ConfigurationTarget.Workspace) {
 							await vscode.commands.executeCommand('workbench.action.openSettingsJson',
 								{
 									revealSetting: {
@@ -2126,8 +2183,7 @@ class Manager {
 								}
 							);
 						}
-						catch (error) {
-							await manager.scopeManager.global.updateConfiguration(vscode.ConfigurationTarget.Workspace);
+						else {
 							await vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile',
 								{
 									revealSetting: {
@@ -2138,39 +2194,27 @@ class Manager {
 							);
 						}
 					}
-				}
-				else {
-					if (manager.scopeManager.global.getConfigurationTarget() != vscode.ConfigurationTarget.Workspace) {
-						await vscode.commands.executeCommand('workbench.action.openSettingsJson',
-							{
-								revealSetting: {
-									key: manager.scopeManager.global.propertyName,
-									edit: true
-								}
-							}
-						);
-					}
-					else {
-						await vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile',
-							{
-								revealSetting: {
-									key: manager.scopeManager.global.propertyName,
-									edit: true
-								}
-							}
-						);
-					}
-				}
 
-				// wait executeCommand can be not focus
-				await new Promise(resolve => setTimeout(resolve, 500));
-				const editor = vscode.window.activeTextEditor;
-				let next = manager.scopeManager.global.regexes.length > 0 ? ',' : '';
-				let snippet = JSON.parse(JSON.stringify(manager.configuration.defaultAddSnippet));
-				if (typeof snippet !== 'string') {
-					snippet = snippet.join('\n');
+					// wait executeCommand can be not focus
+					await new Promise(resolve => setTimeout(resolve, 1000));
+					// get informations from focused editor
+					while (vscode.window.activeTextEditor == undefined ||
+						vscode.window.activeTextEditor == null ||
+						vscode.window.activeTextEditor?.document?.languageId != 'jsonc') {
+						await new Promise(resolve => setTimeout(resolve, 100));
+						log.debug(`wait...`);
+					}
+					const editor = vscode.window.activeTextEditor;
+					let next = manager.scopeManager.global.regexes.length > 0 ? ',' : '';
+					let snippet = JSON.parse(JSON.stringify(manager.configuration.defaultAddSnippet));
+					if (typeof snippet !== 'string') {
+						snippet = snippet.join('\n');
+					}
+					editor.insertSnippet(new vscode.SnippetString(`${snippet}${next}`));
 				}
-				editor.insertSnippet(new vscode.SnippetString(`${snippet}${next}`));
+				catch (error) {
+					log.error(`command: highlight.regex.global.addEntry: ${error.toString()}`);
+				}
 			})
 		);
 		manager.context.subscriptions.push(
@@ -2217,24 +2261,36 @@ class Manager {
 		manager.context.subscriptions.push(
 			vscode.commands.registerCommand('highlight.regex.workspace.addEntry', async (e) => {
 				log.debug('command: highlight.regex.workspace.addEntry');
-				await manager.scopeManager.workspace.updateConfiguration();
-				await vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile',
-					{
-						revealSetting: {
-							key: manager.scopeManager.workspace.propertyName,
-							edit: true
+				try {
+					await manager.scopeManager.workspace.updateConfiguration();
+					await vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile',
+						{
+							revealSetting: {
+								key: manager.scopeManager.workspace.propertyName,
+								edit: true
+							}
 						}
+					);
+					// wait executeCommand can be not focus
+					await new Promise(resolve => setTimeout(resolve, 1000));
+					// get informations from focused editor
+					while (vscode.window.activeTextEditor == undefined ||
+						vscode.window.activeTextEditor == null ||
+						vscode.window.activeTextEditor?.document?.languageId != 'jsonc') {
+						await new Promise(resolve => setTimeout(resolve, 100));
+						log.debug(`wait...`);
 					}
-				);
-				// wait executeCommand can be not focus
-				await new Promise(resolve => setTimeout(resolve, 500));
-				const editor = vscode.window.activeTextEditor;
-				let next = manager.scopeManager.workspace.regexes.length > 0 ? ',' : '';
-				let snippet = JSON.parse(JSON.stringify(manager.configuration.defaultAddSnippet));
-				if (typeof snippet !== 'string') {
-					snippet = snippet.join('\n');
+					const editor = vscode.window.activeTextEditor;
+					let next = manager.scopeManager.workspace.regexes.length > 0 ? ',' : '';
+					let snippet = JSON.parse(JSON.stringify(manager.configuration.defaultAddSnippet));
+					if (typeof snippet !== 'string') {
+						snippet = snippet.join('\n');
+					}
+					editor.insertSnippet(new vscode.SnippetString(`${snippet}${next}`));
 				}
-				editor.insertSnippet(new vscode.SnippetString(`${snippet}${next}`));
+				catch (error) {
+					log.error(`command: highlight.regex.global.addEntry: ${error.toString()}`);
+				}
 			})
 		);
 		manager.context.subscriptions.push(
@@ -2263,25 +2319,23 @@ class Manager {
 				log.debug(`command: highlight.regex.global.editEntry: ${e.path}`);
 				try {
 					await manager.scopeManager.global.updateConfiguration();
+					// first check remote setting
+					if (vscode.env.remoteName !== undefined && globalSettingRemote === undefined) {
+						globalSettingRemote = await manager.setting.useRemoteSetting();
+						log.debug(`globalSettingRemote: ${globalSettingRemote}`);
+						manager.scopeManager.global.updateTreeTitle();
+					}
 					// run on remote
-					if (vscode.env.remoteName !== undefined && manager.scopeManager.global.getConfigurationTarget() != vscode.ConfigurationTarget.Workspace) {
-						await manager.setting.open('workbench.action.openRemoteSettingsFile');
-						try {
-							manager.setting.focus(e.path);
-						}
-						catch (error) {
-							await manager.setting.open('workbench.action.openSettingsJson');
-							manager.setting.focus(e.path);
-						}
+					if (vscode.env.remoteName !== undefined && globalSettingRemote) {
+						await manager.setting.focus('workbench.action.openRemoteSettingsFile', e.path);
 					}
 					else {
 						if (manager.scopeManager.global.getConfigurationTarget() != vscode.ConfigurationTarget.Workspace) {
-							await manager.setting.open('workbench.action.openSettingsJson');
+							await manager.setting.focus('workbench.action.openSettingsJson', e.path);
 						}
 						else {
-							await manager.setting.open('workbench.action.openWorkspaceSettingsFile');
+							await manager.setting.focus('workbench.action.openWorkspaceSettingsFile', e.path);
 						}
-						manager.setting.focus(e.path);
 					}
 				}
 				catch (error) {
@@ -2406,8 +2460,7 @@ class Manager {
 				log.debug('command: highlight.regex.workspace.editEntry');
 				try {
 					await manager.scopeManager.workspace.updateConfiguration();
-					await manager.setting.open('workbench.action.openWorkspaceSettingsFile');
-					manager.setting.focus(e.path);
+					await manager.setting.focus('workbench.action.openWorkspaceSettingsFile', e.path);
 				}
 				catch (error) {
 					log.error(`command: highlight.regex.workspace.editEntry: ${error.toString()}`);
@@ -2526,7 +2579,7 @@ class Manager {
 	}
 }; // class Manager
 
-function activate(context) {
+async function activate(context) {
 	// initialize global log
 	log = vscode.window.createOutputChannel(extensionName, { log: true });
 	manager = new Manager(context);
@@ -2552,8 +2605,7 @@ function activate(context) {
 	manager.active.update(vscode.window.activeTextEditor);
 
 	// event configuration change
-	vscode.workspace.onDidChangeConfiguration(event => {
-		log.debug('event: onDidChangeConfiguration');
+	vscode.workspace.onDidChangeConfiguration(async (event) => {
 		for (const timerKey in timeoutTimer) {
 			if (timeoutTimer.hasOwnProperty(timerKey)) {
 				clearTimeout(timeoutTimer[timerKey]);
@@ -2562,8 +2614,13 @@ function activate(context) {
 		manager.configuration = vscode.workspace.getConfiguration(extensionId);
 		for (const scopeKey in manager.scopeManager.map) {
 			if (manager.scopeManager.map.hasOwnProperty(scopeKey)) {
-				log.debug(`event: onDidChangeConfiguration: ${manager.scopeManager.map[scopeKey].propertyName} updated`);
 				if (event.affectsConfiguration(manager.scopeManager.map[scopeKey].propertyName)) {
+					log.debug(`event: onDidChangeConfiguration: ${manager.scopeManager.map[scopeKey].propertyName} updated`);
+					// check if global on remote setting
+					if ('global' == scopeKey && vscode.env.remoteName !== undefined) {
+						globalSettingRemote = await manager.setting.useRemoteSetting();
+						log.debug(`globalSettingRemote: ${globalSettingRemote}`);
+					}
 					// update title of tree
 					manager.scopeManager.map[scopeKey].updateTreeTitle();
 					if (manager.scopeManager.map[scopeKey].configurationChangeEvent) {

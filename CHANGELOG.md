@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 2.2.2: February 19, 2025
+### Enhancements
+* New method for use global tree manager with user/remote setting.
+
 ## Version 2.2.1: February 17, 2025
 ### Fix
 * Readme default example.
