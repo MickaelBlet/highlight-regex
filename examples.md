@@ -226,36 +226,39 @@
                 "regexes": [
                     {
                         "index": 1,
-                        "regex": "^([0-9]+)([0-9]{3})$",
+                        "regex": "^\\d?\\d?(\\d{3})?(\\d{3})?(\\d{3})?(\\d{3})?(\\d{3})?$",
+                        "regexFlag": "g",
                         "decorations": [
+                            {
+                                "index": 1,
+                                "before": {
+                                    "contentText": ".",
+                                    "margin": "0px; font-size: 3px"
+                                }
+                            },
                             {
                                 "index": 2,
                                 "before": {
                                     "contentText": ".",
                                     "margin": "0px; font-size: 3px"
                                 }
-                            }
-                        ]
-                    },
-                    {
-                        "index": 1,
-                        "regex": "^([0-9]+)([0-9]{3})([0-9]{3})$",
-                        "decorations": [
+                            },
                             {
-                                "index": 2,
+                                "index": 3,
                                 "before": {
                                     "contentText": ".",
                                     "margin": "0px; font-size: 3px"
                                 }
-                            }
-                        ]
-                    },
-                    {
-                        "index": 1,
-                        "regex": "^([0-9]*)([0-9]{3})([0-9]{3})([0-9]{3})$",
-                        "decorations": [
+                            },
                             {
-                                "index": 2,
+                                "index": 4,
+                                "before": {
+                                    "contentText": ".",
+                                    "margin": "0px; font-size: 3px"
+                                }
+                            },
+                            {
+                                "index": 5,
                                 "before": {
                                     "contentText": ".",
                                     "margin": "0px; font-size: 3px"
@@ -266,41 +269,44 @@
                 ]
             },
             {
-                "regex": "(?:[#][0-9a-zA-Z]*|((?:[.,])[0-9]{4,}))",
+                "regex": "(?:[#][0-9a-zA-Z.]*|((?:(?<![.])[.,])[0-9]{4,}))",
                 "regexes": [
                     {
                         "index": 1,
-                        "regex": "^([.,])([0-9]{3})([0-9]+)$",
+                        "regex": "^[.,](\\d{3})?(\\d{3})?(\\d{3})?(\\d{3})?(\\d{3})?\\d?\\d?$",
+                        "regexFlag": "g",
                         "decorations": [
+                            {
+                                "index": 1,
+                                "after": {
+                                    "contentText": ".",
+                                    "margin": "0px; font-size: 3px"
+                                }
+                            },
+                            {
+                                "index": 2,
+                                "after": {
+                                    "contentText": ".",
+                                    "margin": "0px; font-size: 3px"
+                                }
+                            },
                             {
                                 "index": 3,
-                                "before": {
+                                "after": {
                                     "contentText": ".",
                                     "margin": "0px; font-size: 3px"
                                 }
-                            }
-                        ]
-                    },
-                    {
-                        "index": 1,
-                        "regex": "^([.,])([0-9]{3})([0-9]{3})([0-9]+)$",
-                        "decorations": [
+                            },
                             {
                                 "index": 4,
-                                "before": {
+                                "after": {
                                     "contentText": ".",
                                     "margin": "0px; font-size: 3px"
                                 }
-                            }
-                        ]
-                    },
-                    {
-                        "index": 1,
-                        "regex": "^([.,])([0-9]{3})([0-9]{3})([0-9]{3})([0-9]+)$",
-                        "decorations": [
+                            },
                             {
                                 "index": 5,
-                                "before": {
+                                "after": {
                                     "contentText": ".",
                                     "margin": "0px; font-size: 3px"
                                 }
