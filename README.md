@@ -40,9 +40,11 @@ Delete with contectual menu.
 
 ### Navigate
 
-Navigate through regex matches in the active editor.
+Navigate through regex matches in the active, visible or custom trees.
 
 ![tree active search](images/treeActiveSearch.gif)
+![tree visible search](images/treeVisibleSearch.gif)
+![tree custom search](images/treeCustomSearch.gif)
 
 ## Commands
 

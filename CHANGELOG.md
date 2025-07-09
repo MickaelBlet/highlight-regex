@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 2.3.0: July 06, 2025
+### New Features
+* Add `visible` treeView.
+* Add `customs` treeView.
+
 ## Version 2.2.2: February 19, 2025
 ### Enhancements
 * New method for use global tree manager with user/remote setting.

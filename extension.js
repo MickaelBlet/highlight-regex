@@ -703,12 +703,14 @@ class Parser {
 								htmlHovermessage.appendMarkdown(decoration.hoverMessage);
 								cacheRanges[decoration.decoration].push({
 									range: vsRange,
-									hoverMessage: htmlHovermessage
+									hoverMessage: htmlHovermessage,
+									line: editor.document.lineAt(vsRange.start.line)
 								});
 							}
 							else {
 								cacheRanges[decoration.decoration].push({
-									range: vsRange
+									range: vsRange,
+									line: editor.document.lineAt(vsRange.start.line)
 								});
 							}
 						}
@@ -800,6 +802,12 @@ class Parser {
 				log.info(`${this.scope}: Update decorations at "${editor.document.fileName}" with ${countDecoration} occurence(s)`);
 			}
 			this.cacheEditors[key] = cacheRanges;
+			// search on custom treeview
+			for (let i = 0; i < manager.customs.length; i++) {
+				if (key == manager.customs[i].uri) {
+					manager.customs[i].update(key);
+				}
+			}
 		}
 		catch (error) {
 			log.error(`${this.scope}: updateDecorations: ${error.toString()}`);
@@ -830,6 +838,12 @@ class Parser {
 				if (countDecoration > 0) {
 					log.debug(`${this.scope}: Cached decorations at "${editor.document.fileName}" with ${countDecoration} occurence(s) in ${(Date.now() - startTime)} millisecond(s)`);
 					log.info(`${this.scope}: Cached decorations at "${editor.document.fileName}" with ${countDecoration} occurence(s)`);
+				}
+				// search on custom treeview
+				for (let i = 0; i < manager.customs.length; i++) {
+					if (key == manager.customs[i].uri) {
+						manager.customs[i].update(key);
+					}
 				}
 			}
 			else {
@@ -1140,6 +1154,7 @@ class Scope {
 		for (let i = 0; i < vscode.window.visibleTextEditors.length; i++) {
 			this.parser.resetDecorations(vscode.window.visibleTextEditors[i]);
 		}
+		manager.visible.update(vscode.window.visibleTextEditors);
 		manager.active.update(vscode.window.activeTextEditor);
 	}
 
@@ -1149,6 +1164,7 @@ class Scope {
 		for (let i = 0; i < vscode.window.visibleTextEditors.length; i++) {
 			this.parser.updateDecorations(vscode.window.visibleTextEditors[i]);
 		}
+		manager.visible.update(vscode.window.visibleTextEditors);
 		manager.active.update(vscode.window.activeTextEditor);
 	}
 
@@ -1783,9 +1799,9 @@ class Setting {
 			await new Promise(resolve => setTimeout(resolve, 1000));
 			// get informations from focused editor
 			const editor = vscode.window.activeTextEditor;
-			this.uris[cmd] = editor.document.uri;
 			const text = editor.document.getText();
 			let jsoncSetting = new JsoncSettingParser(text);
+			this.uris[cmd] = editor.document.uri;
 			if (path in jsoncSetting.ranges) {
 				editor.selection = new vscode.Selection(editor.document.positionAt(jsoncSetting.ranges[path].start), editor.document.positionAt(jsoncSetting.ranges[path].end));
 				editor.revealRange(new vscode.Range(editor.document.positionAt(jsoncSetting.ranges[path].start), editor.document.positionAt(jsoncSetting.ranges[path].end)), vscode.TextEditorRevealType.InCenter);
@@ -1836,6 +1852,337 @@ class Setting {
 		}
 	}
 }; // class JsonSetting
+
+class VisibleTreeDataProvider {
+	constructor() {
+		this.items = [];
+		// refresh event
+		this._onDidChangeTreeData = new vscode.EventEmitter();
+		this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+	}
+
+	getTreeItem(element) {
+		return element;
+	}
+
+	getChildren(element) {
+		if (element) {
+			return element.childrens;
+		}
+		else {
+			return this.items;
+		}
+	}
+
+	getParent(element) {
+		return element;
+	}
+
+	updateVisibleEditors(visibleEditors) {
+		log.debug(`Visible: TreeView: updateVisibleEditors`);
+		if (visibleEditors === undefined) {
+			this.items = [];
+			return;
+		}
+		let editors = [];
+		if (!manager.visible.mode) {
+			for (let v = 0; v < visibleEditors.length; v++) {
+				let description = "";
+				try {
+					// search editor uri on tabgroups
+					let i = 0;
+					for (; i < vscode.window.tabGroups.all.length; i++) {
+						let j = 0;
+						for (; j < vscode.window.tabGroups.all[i].tabs.length; j++) {
+							if (vscode.window.tabGroups.all[i].tabs[j].input !== undefined &&
+								vscode.window.tabGroups.all[i].tabs[j].input.uri !== undefined &&
+								vscode.window.tabGroups.all[i].tabs[j].input.uri.toString(true) === visibleEditors[v].document.uri.toString(true)) {
+								description = vscode.window.tabGroups.all[i].tabs[j].label;
+								break;
+							}
+						}
+						if (j < vscode.window.tabGroups.all[i].tabs.length) {
+							break;
+						}
+					}
+					if (i == vscode.window.tabGroups.all.length) {
+						description = manager.basename(visibleEditors[v].document.uri.path);
+					}
+				}
+				catch (error) {
+					log.error(`${error.toString()}`);
+				}
+				try {
+					let items = [];
+					let activeEditorKey = visibleEditors[v].document.uri.toString(true);
+					log.debug(`- ${activeEditorKey}`);
+					for (let scopeKey in manager.scopeManager.map) {
+						if (manager.scopeManager.map.hasOwnProperty(scopeKey)) {
+							const cacheEditors = manager.scopeManager.map[scopeKey].parser.cacheEditors;
+							const regexes = manager.scopeManager.map[scopeKey].parser.regexes;
+							if (activeEditorKey in cacheEditors && cacheEditors[activeEditorKey] !== undefined) {
+								const cacheRanges = cacheEditors[activeEditorKey];
+								for (let i = 0; i < regexes.length; i++) {
+									const regex = regexes[i];
+									let childrens = [];
+									for (let j = 0; j < cacheRanges.length; j++) {
+										if (cacheRanges[j].length > 0) {
+											if (regex.decorationRange.start <= j && regex.decorationRange.end >= j) {
+												for (let l = 0; l < cacheRanges[j].length; l++) {
+													const range = cacheRanges[j][l];
+													let line = range.line;
+													let prefix = `${range.range.start.line + 1}:\t`;
+													childrens.push({
+														context: "selectToEditor",
+														editor: visibleEditors[v],
+														range: range.range,
+														label: {
+															label: `${prefix}${line.text.substring(line.firstNonWhitespaceCharacterIndex)}`,
+															highlights: [
+																[
+																	range.range.start.character - line.firstNonWhitespaceCharacterIndex + prefix.length,
+																	range.range.end.character - line.firstNonWhitespaceCharacterIndex + prefix.length
+																]
+															]
+														},
+														tooltip: `${line.text.substring(line.firstNonWhitespaceCharacterIndex)} [Ln ${range.range.start.line + 1}, Col ${range.range.start.character + 1}]`,
+														collapsibleState: vscode.TreeItemCollapsibleState.None
+													});
+												}
+											}
+										}
+									}
+									if (childrens.length > 0) {
+										childrens.sort((a, b) => {
+											if (a.range.start.line > b.range.start.line) return 1;
+											if (a.range.start.line < b.range.start.line) return -1;
+											if (a.range.start.character > b.range.start.character) return 1;
+											if (a.range.start.character < b.range.start.character) return -1;
+											return 0;
+										});
+										items.push({
+											label: `${regex.label}`,
+											iconPath: new vscode.ThemeIcon('regex'),
+											tooltip: `${regex.label}`,
+											collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+											resourceUri: vscode.Uri.parse(`highlight.regex.treeview.visible.uri:${manager.visible.tree.description}?${childrens.length}`, true),
+											childrens: childrens
+										});
+									}
+								}
+							}
+						}
+					}
+					if (items.length > 0) {
+						editors.push({
+							label: `${description}`,
+							iconPath: visibleEditors[v].document.uri.scheme == 'file' ? new vscode.ThemeIcon('symbol-file') : new vscode.ThemeIcon('symbol-misc'),
+							tooltip: `${description}`,
+							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+							resourceUri: vscode.Uri.parse(`highlight.regex.treeview.visible.file.uri:${manager.visible.tree.description}?${items.length}`, true),
+							childrens: items
+						});
+					}
+				}
+				catch (error) {
+					log.error(`${error.toString()}`);
+				}
+			}
+			editors.sort((a, b) => {
+				if (a.label > b.label) return 1;
+				if (a.label < b.label) return -1;
+				return 0;
+			});
+		}
+		else {
+			let items = [];
+			for (let v = 0; v < visibleEditors.length; v++) {
+				let description = "";
+				try {
+					// search editor uri on tabgroups
+					let i = 0;
+					for (; i < vscode.window.tabGroups.all.length; i++) {
+						let j = 0;
+						for (; j < vscode.window.tabGroups.all[i].tabs.length; j++) {
+							if (vscode.window.tabGroups.all[i].tabs[j].input !== undefined &&
+								vscode.window.tabGroups.all[i].tabs[j].input.uri !== undefined &&
+								vscode.window.tabGroups.all[i].tabs[j].input.uri.toString(true) === visibleEditors[v].document.uri.toString(true)) {
+								description = vscode.window.tabGroups.all[i].tabs[j].label;
+								break;
+							}
+						}
+						if (j < vscode.window.tabGroups.all[i].tabs.length) {
+							break;
+						}
+					}
+					if (i == vscode.window.tabGroups.all.length) {
+						description = manager.basename(visibleEditors[v].document.uri.fsPath);
+					}
+				}
+				catch (error) {
+					log.error(`${error.toString()}`);
+				}
+				try {
+					let activeEditorKey = visibleEditors[v].document.uri.toString(true);
+					log.debug(`- ${activeEditorKey}`);
+					for (let scopeKey in manager.scopeManager.map) {
+						if (manager.scopeManager.map.hasOwnProperty(scopeKey)) {
+							const cacheEditors = manager.scopeManager.map[scopeKey].parser.cacheEditors;
+							const regexes = manager.scopeManager.map[scopeKey].parser.regexes;
+							if (activeEditorKey in cacheEditors && cacheEditors[activeEditorKey] !== undefined) {
+								const cacheRanges = cacheEditors[activeEditorKey];
+								for (let i = 0; i < regexes.length; i++) {
+									const regex = regexes[i];
+									let childrens = [];
+									for (let j = 0; j < cacheRanges.length; j++) {
+										if (cacheRanges[j].length > 0) {
+											if (regex.decorationRange.start <= j && regex.decorationRange.end >= j) {
+												for (let l = 0; l < cacheRanges[j].length; l++) {
+													const range = cacheRanges[j][l];
+													let line = range.line;
+													let prefix = `${range.range.start.line + 1}:\t`;
+													childrens.push({
+														context: "selectToEditor",
+														editor: visibleEditors[v],
+														range: range.range,
+														label: {
+															label: `${prefix}${line.text.substring(line.firstNonWhitespaceCharacterIndex)}`,
+															highlights: [
+																[
+																	range.range.start.character - line.firstNonWhitespaceCharacterIndex + prefix.length,
+																	range.range.end.character - line.firstNonWhitespaceCharacterIndex + prefix.length
+																]
+															]
+														},
+														tooltip: `${line.text.substring(line.firstNonWhitespaceCharacterIndex)} [Ln ${range.range.start.line + 1}, Col ${range.range.start.character + 1}]`,
+														collapsibleState: vscode.TreeItemCollapsibleState.None
+													});
+												}
+											}
+										}
+									}
+									if (childrens.length > 0) {
+										childrens.sort((a, b) => {
+											if (a.range.start.line > b.range.start.line) return 1;
+											if (a.range.start.line < b.range.start.line) return -1;
+											if (a.range.start.character > b.range.start.character) return 1;
+											if (a.range.start.character < b.range.start.character) return -1;
+											return 0;
+										});
+										items.push({
+											label: `${regex.label}`,
+											description: description,
+											iconPath: new vscode.ThemeIcon('regex'),
+											tooltip: `${regex.label}`,
+											collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+											resourceUri: vscode.Uri.parse(`highlight.regex.treeview.visible.uri:${manager.visible.tree.title}?${childrens.length}`, true),
+											childrens: childrens
+										});
+									}
+								}
+							}
+						}
+					}
+
+				}
+				catch (error) {
+					log.error(`${error.toString()}`);
+				}
+			}
+			items.sort((a, b) => {
+				if (a.description > b.description) return 1;
+				if (a.description < b.description) return -1;
+				return 0;
+			});
+			editors = items;
+		}
+		this.items = editors;
+		manager.visible.tree.badge = {
+			value: editors.length,
+			tooltip: ""
+		};
+		this.refresh();
+	}
+
+	refresh() {
+		this._onDidChangeTreeData.fire();
+	}
+}; // class VisibleTreeDataProvider
+
+class VisibleFileDecorationProvider {
+	provideFileDecoration(uri, token) {
+		if (uri.scheme === 'highlight.regex.treeview.visible.file.uri') {
+			let badge = parseInt(uri.query);
+			let tooltip = `${uri.query} regex${badge > 1 ? 'es' : ''} found`
+			if (badge > 99) {
+				badge = '++';
+			}
+			return {
+				badge: `${badge}`,
+				tooltip: tooltip,
+				// color: new vscode.ThemeColor('textLink.activeForeground'),
+				propagate: false // don't propagate to children elements
+			};
+		}
+		if (uri.scheme === 'highlight.regex.treeview.visible.uri') {
+			let badge = parseInt(uri.query);
+			let tooltip = `${uri.query} occurence${badge > 1 ? 's' : ''} found`
+			if (badge > 99) {
+				badge = '++';
+			}
+			return {
+				badge: `${badge}`,
+				tooltip: tooltip,
+				// color: new vscode.ThemeColor('textLink.activeForeground'),
+				propagate: false // don't propagate to children elements
+			};
+		}
+		return undefined;
+	}
+}
+
+class Visible {
+	constructor() {
+		this.treeDataProvider = new VisibleTreeDataProvider();
+		this.tree = vscode.window.createTreeView(`${extensionId}.view.visible`, {
+			treeDataProvider: this.treeDataProvider,
+			showCollapseAll: true
+		});
+		this.mode = vscode.workspace.getConfiguration(extensionId).visibleTreeview;
+
+		// manager.context.subscriptions.push(
+		vscode.window.registerFileDecorationProvider(
+			new VisibleFileDecorationProvider()
+		);
+		// );
+
+		this.tree.onDidChangeSelection(this.onDidChangeSelection);
+	}
+
+	onDidChangeSelection(e) {
+		if (e.selection && e.selection.length === 1) {
+			let select = e.selection[0];
+			if (select.context !== undefined && select.context == 'selectToEditor') {
+				select.editor.selection = new vscode.Selection(
+					select.range.start,
+					select.range.end
+				);
+				select.editor.revealRange(select.range,
+					vscode.TextEditorRevealType.InCenter);
+			}
+		}
+	}
+
+	update(visibleEditors) {
+		// take all ranges from cached informations of scope parser
+		this.treeDataProvider.updateVisibleEditors(visibleEditors);
+	}
+
+	refresh() {
+		this.treeDataProvider.refresh();
+	}
+
+}; // class Visible
 
 class ActiveTreeDataProvider {
 	constructor() {
@@ -1909,7 +2256,7 @@ class ActiveTreeDataProvider {
 									if (regex.decorationRange.start <= j && regex.decorationRange.end >= j) {
 										for (let l = 0; l < cacheRanges[j].length; l++) {
 											const range = cacheRanges[j][l];
-											let line = activeEditor.document.lineAt(range.range.start.line);
+											let line = range.line;
 											let prefix = `${range.range.start.line + 1}:\t`;
 											childrens.push({
 												context: "selectToEditor",
@@ -1972,17 +2319,17 @@ class ActiveFileDecorationProvider {
 	provideFileDecoration(uri, token) {
 		if (uri.scheme === 'highlight.regex.treeview.uri') {
 			let badge = parseInt(uri.query);
+			let tooltip = `${uri.query} occurence${badge > 1 ? 's' : ''} found`
 			if (badge > 99) {
-				badge = '∞';
+				badge = '++';
 			}
 			return {
 				badge: `${badge}`,
-				tooltip: `${uri.query} occurence(s) found`,
+				tooltip: tooltip,
 				// color: new vscode.ThemeColor('textLink.activeForeground'),
 				propagate: false // don't propagate to children elements
 			};
 		}
-		// I don't add any decoration for the rest of the files
 		return undefined;
 	}
 }
@@ -2023,6 +2370,343 @@ class Active {
 
 }; // class Active
 
+class CustomQuickPick {
+	constructor() {
+		this.quickpick = vscode.window.createQuickPick();
+		this.quickpick.placeholder = 'Name of file or uri';
+		this.quickpick.title = 'Choose your uri on cache';
+		this.quickpick.matchOnDescription = true;
+		this.quickpick.matchOnDetail = true;
+		this.custom_id = undefined;
+		this.visible = false;
+		let that = this;
+		this.quickpick.onDidAccept(() => {
+			log.debug('customQuickpick: onDidAccept');
+			if (that.custom_id !== undefined && 1 === that.quickpick.selectedItems.length) {
+				const custom = manager.customs[that.custom_id];
+				custom.update(that.quickpick.selectedItems[0].description);
+			}
+			that.quickpick.hide();
+		});
+		this.quickpick.onDidHide(() => {
+			log.debug('customQuickpick: onDidHide');
+			that.visible = false;
+			that.quickpick.hide();
+		});
+	}
+
+	updateItems(custom_id, activeEditor) {
+		function uriLabelExists(items, uri) {
+			for (let i = 0; i < items.length; i++) {
+				if (items[i].description === uri) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		let items = [];
+		if (activeEditor) {
+			const uriStr = activeEditor.document.uri.toString(true);
+			// separator
+			items.push({ label: `active`, kind: -1 });
+			items.push({
+				label: manager.basename(activeEditor.document.uri.path),
+				description: uriStr,
+				iconPath: activeEditor.document.uri.scheme == 'file' ? new vscode.ThemeIcon('symbol-file') : new vscode.ThemeIcon('symbol-misc')
+			});
+		}
+
+		// separator
+		items.push({ label: `visible`, kind: -1 });
+		for (let i = 0; i < vscode.window.visibleTextEditors.length; i++) {
+			const editor = vscode.window.visibleTextEditors[i];
+			const uri = editor.document.uri.toString(true);
+			if (!uriLabelExists(items, uri)) {
+				items.push({
+					label: manager.basename(editor.document.uri.path),
+					description: uri,
+					iconPath: editor.document.uri.scheme == 'file' ? new vscode.ThemeIcon('symbol-file') : new vscode.ThemeIcon('symbol-misc')
+				});
+			}
+		}
+
+		for (let scopeKey in manager.scopeManager.map) {
+			if (manager.scopeManager.map.hasOwnProperty(scopeKey)) {
+				// separator
+				items.push({ label: `Tab ${scopeKey}`, kind: -1 });
+				const cacheEditors = manager.scopeManager.map[scopeKey].parser.cacheEditors;
+				for (let i = 0; i < vscode.window.tabGroups.all.length; i++) {
+					let j = 0;
+					for (; j < vscode.window.tabGroups.all[i].tabs.length; j++) {
+						if (vscode.window.tabGroups.all[i].tabs[j].input !== undefined &&
+							vscode.window.tabGroups.all[i].tabs[j].input.uri !== undefined) {
+							const uri = vscode.window.tabGroups.all[i].tabs[j].input.uri.toString(true);
+							if (uri in cacheEditors && !uriLabelExists(items, uri)) {
+								const vsUri = vscode.Uri.parse(uri);
+								items.push({
+									label: manager.basename(vsUri.path),
+									description: uri,
+									iconPath: vsUri.scheme == 'file' ? new vscode.ThemeIcon('symbol-file') : new vscode.ThemeIcon('symbol-misc')
+								});
+							}
+						}
+					}
+				}
+			}
+		}
+
+		for (let scopeKey in manager.scopeManager.map) {
+			if (manager.scopeManager.map.hasOwnProperty(scopeKey)) {
+				// separator
+				items.push({ label: `Cached ${scopeKey}`, kind: -1 });
+				const cacheEditors = manager.scopeManager.map[scopeKey].parser.cacheEditors;
+				for (let cacheEditor in cacheEditors) {
+					if (cacheEditors.hasOwnProperty(cacheEditor) && cacheEditors[cacheEditor].length > 0 && !uriLabelExists(items, cacheEditor)) {
+						const vsUri = vscode.Uri.parse(cacheEditor);
+						items.push({
+							label: manager.basename(vsUri.path),
+							description: cacheEditor,
+							iconPath: vsUri.scheme == 'file' ? new vscode.ThemeIcon('symbol-file') : new vscode.ThemeIcon('symbol-misc')
+						});
+					}
+				}
+			}
+		}
+
+		this.custom_id = custom_id;
+		this.quickpick.items = items;
+	}
+}; // class CustomQuickPick
+
+class CustomTreeDataProvider {
+	constructor(index) {
+		this.index = index;
+		this.items = [];
+		// refresh event
+		this._onDidChangeTreeData = new vscode.EventEmitter();
+		this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+	}
+
+	getTreeItem(element) {
+		return element;
+	}
+
+	getChildren(element) {
+		if (element) {
+			return element.childrens;
+		}
+		else {
+			return this.items;
+		}
+	}
+
+	getParent(element) {
+		return element;
+	}
+
+	updateUri(uri) {
+		log.debug(`Custom: TreeView: updateUri: ${uri}`);
+		if (undefined === uri) {
+			this.items = [];
+			manager.customs[this.index].tree.description = '';
+			manager.customs[this.index].tree.badge = {
+				value: 0,
+				tooltip: ""
+			};
+			this.refresh();
+			return;
+		}
+		try {
+			// search editor uri on tabgroups
+			let i = 0;
+			for (; i < vscode.window.tabGroups.all.length; i++) {
+				let j = 0;
+				for (; j < vscode.window.tabGroups.all[i].tabs.length; j++) {
+					if (vscode.window.tabGroups.all[i].tabs[j].input !== undefined &&
+						vscode.window.tabGroups.all[i].tabs[j].input.uri !== undefined &&
+						vscode.window.tabGroups.all[i].tabs[j].input.uri.toString(true) === uri) {
+						manager.customs[this.index].tree.description = vscode.window.tabGroups.all[i].tabs[j].label;
+						break;
+					}
+				}
+				if (j < vscode.window.tabGroups.all[i].tabs.length) {
+					break;
+				}
+			}
+			if (i == vscode.window.tabGroups.all.length) {
+				manager.customs[this.index].tree.description = manager.basename(vscode.Uri.parse(uri).path);
+			}
+		}
+		catch (error) {
+			log.error(`${error.toString()}`);
+		}
+
+		let items = [];
+		try {
+			let activeEditorKey = uri;
+			for (let scopeKey in manager.scopeManager.map) {
+				if (manager.scopeManager.map.hasOwnProperty(scopeKey)) {
+					const cacheEditors = manager.scopeManager.map[scopeKey].parser.cacheEditors;
+					const regexes = manager.scopeManager.map[scopeKey].parser.regexes;
+					if (activeEditorKey in cacheEditors && cacheEditors[activeEditorKey] !== undefined) {
+						const cacheRanges = cacheEditors[activeEditorKey];
+						for (let i = 0; i < regexes.length; i++) {
+							const regex = regexes[i];
+							let childrens = [];
+							for (let j = 0; j < cacheRanges.length; j++) {
+								if (cacheRanges[j].length > 0) {
+									if (regex.decorationRange.start <= j && regex.decorationRange.end >= j) {
+										for (let l = 0; l < cacheRanges[j].length; l++) {
+											const range = cacheRanges[j][l];
+											let line = range.line;
+											let prefix = `${range.range.start.line + 1}:\t`;
+											childrens.push({
+												context: "selectToEditor",
+												range: range.range,
+												label: {
+													label: `${prefix}${line.text.substring(line.firstNonWhitespaceCharacterIndex)}`,
+													highlights: [
+														[
+															range.range.start.character - line.firstNonWhitespaceCharacterIndex + prefix.length,
+															range.range.end.character - line.firstNonWhitespaceCharacterIndex + prefix.length
+														]
+													]
+												},
+												tooltip: `${line.text.substring(line.firstNonWhitespaceCharacterIndex)} [Ln ${range.range.start.line + 1}, Col ${range.range.start.character + 1}]`,
+												collapsibleState: vscode.TreeItemCollapsibleState.None
+											});
+										}
+									}
+								}
+							}
+							if (childrens.length > 0) {
+								childrens.sort((a, b) => {
+									if (a.range.start.line > b.range.start.line) return 1;
+									if (a.range.start.line < b.range.start.line) return -1;
+									if (a.range.start.character > b.range.start.character) return 1;
+									if (a.range.start.character < b.range.start.character) return -1;
+									return 0;
+								});
+								items.push({
+									label: `${regex.label}`,
+									iconPath: new vscode.ThemeIcon('regex'),
+									tooltip: `${regex.label}`,
+									collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+									resourceUri: vscode.Uri.parse(`highlight.regex.treeview.custom${this.index}.uri:custom?${childrens.length}`, true),
+									childrens: childrens
+								});
+							}
+						}
+					}
+				}
+			}
+		}
+		catch (error) {
+			log.error(`${error.toString()}`);
+		}
+		this.items = items;
+		manager.customs[this.index].tree.badge = {
+			value: items.length,
+			tooltip: ""
+		};
+		this.refresh();
+	}
+
+	refresh() {
+		this._onDidChangeTreeData.fire();
+	}
+}; // class CustomTreeDataProvider
+
+class CustomFileDecorationProvider {
+	constructor(index) {
+		this.index = index;
+	}
+	provideFileDecoration(uri, token) {
+		if (uri.scheme === `highlight.regex.treeview.custom${this.index}.uri`) {
+			let badge = parseInt(uri.query);
+			let tooltip = `${uri.query} occurence${badge > 1 ? 's' : ''} found`
+			if (badge > 99) {
+				badge = '++';
+			}
+			return {
+				badge: `${badge}`,
+				tooltip: tooltip,
+				// color: new vscode.ThemeColor('textLink.activeForeground'),
+				propagate: false // don't propagate to children elements
+			};
+		}
+		return undefined;
+	}
+}
+
+class Custom {
+	constructor(index) {
+		this.index = index;
+		this.propertyName = `${extensionId}.custom${index}`;
+		this.uri = undefined;
+		this.treeDataProvider = new CustomTreeDataProvider(index - 1);
+		this.tree = vscode.window.createTreeView(`${extensionId}.view.custom${index}`, {
+			treeDataProvider: this.treeDataProvider
+		});
+
+		vscode.window.registerFileDecorationProvider(
+			new CustomFileDecorationProvider(index - 1)
+		);
+
+		this.tree.onDidChangeSelection((e) => {
+			if (e.selection && e.selection.length === 1) {
+				let select = e.selection[0];
+				if (select.context !== undefined && select.context == 'selectToEditor') {
+					vscode.workspace.openTextDocument(vscode.Uri.parse(this.uri)).then(doc => {
+						vscode.window.showTextDocument(doc).then(editor => {
+							editor.selection = new vscode.Selection(
+								select.range.start,
+								select.range.end
+							);
+							editor.revealRange(select.range,
+								vscode.TextEditorRevealType.InCenter);
+						});
+					});
+				}
+			}
+		});
+	}
+
+	loadConfiguration() {
+		let configurationUri = vscode.workspace.getConfiguration(this.propertyName)?.uri;
+		if (configurationUri) {
+			this.tree.description = configurationUri;
+			this.update(configurationUri);
+		}
+	}
+
+	update(uri) {
+		// find editor of target
+		this.uri = uri;
+		// take all ranges from cached informations of scope parser
+		this.treeDataProvider.updateUri(uri);
+		// set configuration
+		vscode.workspace.getConfiguration().update(
+			this.propertyName + '.uri',
+			this.uri
+		);
+		// set active tree buttons
+		vscode.commands.executeCommand(`setContext`, `highlight.regex.custom${this.index}.active`, true);
+	}
+
+	clear() {
+		this.uri = undefined;
+		this.treeDataProvider.updateUri(undefined);
+		vscode.workspace.getConfiguration().update(
+			this.propertyName + '.uri',
+			undefined
+		);
+		vscode.commands.executeCommand(`setContext`, `highlight.regex.custom${this.index}.active`, false);
+	}
+
+}; // class Custom
+
 class Manager {
 	constructor(context) {
 		this.context = context;
@@ -2030,7 +2714,30 @@ class Manager {
 		this.scopeManager = new ScopeManager(this.configuration);
 		this.setting = new Setting();
 		this.quickpick = new QuickPick(this.scopeManager, this.setting);
+		this.visible = new Visible();
 		this.active = new Active();
+
+		if ('tree' === this.configuration.visibleTreeviewMode) {
+			this.visible.mode = false;
+		}
+		else {
+			this.visible.mode = true;
+		}
+		vscode.commands.executeCommand(`setContext`, `highlight.regex.visible.listView.active`, this.visible.mode);
+
+		this.customs = [];
+		for (let i = 1; i < 11; i++) {
+			vscode.commands.executeCommand(`setContext`, `highlight.regex.custom${i}.active`, false);
+			this.customs.push(new Custom(i));
+		}
+		this.customQuickpick = new CustomQuickPick();
+	}
+
+	basename(str) {
+		if (str.lastIndexOf("/") != -1) {
+			return str.substring(str.lastIndexOf("/") + 1);
+		}
+		return str;
 	}
 
 	/**
@@ -2305,6 +3012,60 @@ class Manager {
 				manager.scopeManager.workspace.treeDataProvider.collapseAll();
 			})
 		);
+	}
+
+	/**
+	 * Add visible actions on context
+	 */
+	subscriptionsVisible() {
+		manager.context.subscriptions.push(
+			vscode.commands.registerCommand('highlight.regex.visible.toggleListView', () => {
+				log.debug('command: highlight.regex.visible.toggleListView');
+				vscode.commands.executeCommand(`setContext`, `highlight.regex.visible.listView.active`, false);
+				manager.visible.mode = false;
+				manager.visible.update(vscode.window.visibleTextEditors);
+				manager.visible.refresh();
+			})
+		);
+		manager.context.subscriptions.push(
+			vscode.commands.registerCommand('highlight.regex.visible.toggleTreeView', () => {
+				log.debug('command: highlight.regex.visible.toggleTreeView');
+				vscode.commands.executeCommand(`setContext`, `highlight.regex.visible.listView.active`, true);
+				manager.visible.mode = true;
+				manager.visible.update(vscode.window.visibleTextEditors);
+				manager.visible.refresh();
+			})
+		);
+	}
+
+	/**
+	 * Add custom actions on context
+	 */
+	subscriptionsCustom() {
+		for (let i = 1; i < 11; i++) {
+			manager.context.subscriptions.push(
+				vscode.commands.registerCommand(`highlight.regex.custom${i}.reference`, () => {
+					log.debug(`command: highlight.regex.custom${i}.reference`);
+					vscode.workspace.openTextDocument(vscode.Uri.parse(manager.customs[i - 1].uri)).then(doc => {
+						vscode.window.showTextDocument(doc);
+					});
+				})
+			);
+			manager.context.subscriptions.push(
+				vscode.commands.registerCommand(`highlight.regex.custom${i}.choose`, () => {
+					log.debug(`command: highlight.regex.custom${i}.choose`);
+					manager.customQuickpick.updateItems(i - 1, vscode.window.activeTextEditor);
+					manager.customQuickpick.visible = true;
+					manager.customQuickpick.quickpick.show();
+				})
+			);
+			manager.context.subscriptions.push(
+				vscode.commands.registerCommand(`highlight.regex.custom${i}.clear`, () => {
+					log.debug(`command: highlight.regex.custom${i}.clear`);
+					manager.customs[i - 1].clear();
+				})
+			);
+		}
 	}
 
 	/**
@@ -2584,6 +3345,8 @@ async function activate(context) {
 	log = vscode.window.createOutputChannel(extensionName, { log: true });
 	manager = new Manager(context);
 	manager.subscriptionsCache();
+	manager.subscriptionsVisible();
+	manager.subscriptionsCustom();
 	manager.subscriptionsRefresh();
 	manager.subscriptionsQuickPick();
 	manager.subscriptionsToggle();
@@ -2602,7 +3365,12 @@ async function activate(context) {
 		}
 	}
 
+	manager.visible.update(vscode.window.visibleTextEditors);
 	manager.active.update(vscode.window.activeTextEditor);
+
+	for (let i = 0; i < manager.customs.length; i++) {
+		manager.customs[i].loadConfiguration();
+	}
 
 	// event configuration change
 	vscode.workspace.onDidChangeConfiguration(async (event) => {
@@ -2631,6 +3399,9 @@ async function activate(context) {
 				}
 			}
 		}
+		for (let i = 0; i < manager.customs.length; i++) {
+			manager.customs[i].loadConfiguration();
+		}
 	});
 
 	// event change visible editors
@@ -2657,6 +3428,7 @@ async function activate(context) {
 			}
 		}
 		lastVisibleEditors = newVisibleEditors;
+		manager.visible.update(visibleTextEditors);
 	});
 
 	// event change text content
@@ -2692,6 +3464,7 @@ async function activate(context) {
 					manager.scopeManager.map[scopeKey].parser.updateDecorations(editor);
 				}
 			}
+			manager.visible.update(vscode.window.visibleTextEditors);
 			manager.active.update(vscode.window.activeTextEditor);
 		}, manager.configuration.delay);
 	}
