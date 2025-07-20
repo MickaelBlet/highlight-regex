@@ -103,9 +103,13 @@ The first object level can include the following properties:
       {
         // regex to find all within comments
         "regex": [
-          "(?:(['\"])[^]*?(?:(?<!\\\\)\\1))", // not in string
+          "(?:",
+          "\"(?:[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\"",
           "|",
-          "(",
+          "'(?:[^'\\\\]*(?:\\\\.[^'\\\\]*)*)'",
+          ")",
+          "|",
+          "(?<comment>",
           "(?:/\\*[^]*?\\*/)",
           "|",
           "(?://[^]*?(?:(?<!\\\\)$))",
@@ -115,11 +119,11 @@ The first object level can include the following properties:
         "regexLimit": 25000,
         "regexes": [
           {
-            "index": 2, // 2 for take comments match
+            "index": "comment", // match regex named group (comment)
             "regex": [
               "\\b(?<todo>TODO)\\b",
               "|",
-              "\\b(CRITICAL)\\b"
+              "\\b(?<critical>CRITICAL)\\b"
             ],
             "regexFlag": "gmi",
             "regexLimit": 25000,
@@ -142,7 +146,7 @@ The first object level can include the following properties:
                 }
               },
               {
-                "index": 2, // (CRITICAL)
+                "index": "critical", // match regex named group (critical)
                 "borderRadius": "4px",
                 "fontWeight": "bold",
                 "overviewRulerColor": "#FF0000FF",

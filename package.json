@@ -2,7 +2,7 @@
 	"name": "highlight-regex",
 	"displayName": "Highlight - Regex",
 	"description": "Highlight (decorate) what you want with Regex",
-	"version": "2.3.0",
+	"version": "2.3.1",
 	"publisher": "mblet",
 	"engines": {
 		"vscode": "^1.80.0"
@@ -855,9 +855,13 @@
 							"regexes": [
 								{
 									"regex": [
-										"(?:(['\"])[^]*?(?:(?<!\\\\)\\1))",
+										"(?:",
+										"\"(?:[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\"",
 										"|",
-										"(",
+										"'(?:[^'\\\\]*(?:\\\\.[^'\\\\]*)*)'",
+										")",
+										"|",
+										"(?<comment>",
 										"(?:/\\*[^]*?\\*/)",
 										"|",
 										"(?://[^]*?(?:(?<!\\\\)$))",
@@ -867,11 +871,11 @@
 									"regexLimit": 25000,
 									"regexes": [
 										{
-											"index": 2,
+											"index": "comment",
 											"regex": [
 												"\\b(?<todo>TODO)\\b",
 												"|",
-												"\\b(CRITICAL)\\b"
+												"\\b(?<critical>CRITICAL)\\b"
 											],
 											"regexFlag": "gmi",
 											"regexLimit": 25000,
@@ -894,7 +898,7 @@
 													}
 												},
 												{
-													"index": 2,
+													"index": "critical",
 													"borderRadius": "4px",
 													"fontWeight": "bold",
 													"overviewRulerColor": "#FF0000FF",

@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 2.3.1: July 20, 2025
+### Fix
+* Default example.
+* Named group parsing.
+
 ## Version 2.3.0: July 06, 2025
 ### New Features
 * Add `visible` treeView.

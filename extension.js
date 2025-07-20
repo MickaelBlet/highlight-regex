@@ -316,7 +316,7 @@ class Parser {
 								realIndex++;
 
 								start = i;
-								i = jumpToEndOfParenthesis(text, i);
+								i = jumpToEndOfParenthesis(text, start - 1);
 								end = i;
 							}
 							// is non capture group
