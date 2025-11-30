@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 2.3.3: November 30, 2025
+### Fix
+* Parsing regex setting error.
+
 ## Version 2.3.2: November 30, 2025
 ### Enhancements
 * Add an `Edit` button to the parsing regex setting error.

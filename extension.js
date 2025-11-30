@@ -612,12 +612,12 @@ class Parser {
 				decorationStartIndex = this.decorations.length;
 			}
 			catch (error) {
-				log.error(`${this.scope}: ${error.toString()}: ${regex_path}`);
+				log.error(`${this.scope}: ${error.toString()}: ${currentRegexPath}`);
 				const searchPath = `${currentRegexPath}`;
 				vscode.window.showErrorMessage(error.toString(), 'Edit', 'Close').then(choice => {
 					if (choice === 'Edit') {
 						// is global setting
-						if (searchPath.startsWith("/highlight.regex.regexes")) {
+						if (searchPath.startsWith(`/${extensionId}.regexes`)) {
 							// first check remote setting
 							if (vscode.env.remoteName !== undefined && globalSettingRemote === undefined) {
 								globalSettingRemote = manager.setting.useRemoteSetting();
@@ -1316,7 +1316,7 @@ class QuickPick {
 			if (event.button.tooltip == 'Edit') {
 				let path = `/${that.scopeManager.map[event.item.scope].propertyName}/[${event.item.index}]`;
 				// is global setting
-				if (path.startsWith("/highlight.regex.regexes")) {
+				if (path.startsWith(`/${extensionId}.regexes`)) {
 					await manager.scopeManager.global.updateConfiguration();
 					// first check remote setting
 					if (vscode.env.remoteName !== undefined && globalSettingRemote === undefined) {
@@ -1826,7 +1826,7 @@ class Setting {
 		if (!(cmd in this.uris)) {
 			await vscode.commands.executeCommand(cmd, {});
 			// wait executeCommand can be not focus
-			await new Promise(resolve => setTimeout(resolve, 1000));
+			await new Promise(resolve => setTimeout(resolve, 2000));
 			// get informations from focused editor
 			const editor = vscode.window.activeTextEditor;
 			const text = editor.document.getText();
