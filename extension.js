@@ -49,8 +49,10 @@ class Parser {
 
 	// load configuration from contributions
 	loadConfigurations(configuration, regexesConfiguration) {
+		let rootPath = this.scope == 'global' ? `/${extensionId}.regexes` : `/${extensionId}.${this.scope}.regexes`;
+		let currentRegexPath = `${rootPath}`;
 		let zindex = this.startZindex;
-		let loadRegexes = (configuration, regex) => {
+		let loadRegexes = (childPath, configuration, regex) => {
 			// transform 'a(?: )bc(def(ghi)xyz)' to '(a)((?: ))(bc)((def)(ghi)(xyz))'
 			let addHiddenMatchGroups = (sRegex) => {
 				let jumpToEndOfBrace = (text, index) => {
@@ -475,6 +477,7 @@ class Parser {
 			if (typeof regexStr !== 'string') {
 				regexStr = regexStr.join('');
 			}
+			currentRegexPath = `${childPath}/regex`;
 			let regexRegExp = new RegExp(regexStr, (regex.regexFlag) ? regex.regexFlag : configuration.defaultRegexFlag);
 			regexRegExp.test();
 			// add hide groups
@@ -485,7 +488,7 @@ class Parser {
 			let regexList = [];
 			if (regex.regexes?.length > 0) {
 				for (let i = regex.regexes.length - 1; i >= 0; i--) {
-					regexList.push(loadRegexes(configuration, regex.regexes[i]));
+					regexList.push(loadRegexes(`${childPath}/regexes/[${i}]`, configuration, regex.regexes[i]));
 				}
 			}
 			if (regex.decorations?.length > 0) {
@@ -565,15 +568,17 @@ class Parser {
 				let regexList = regexesConfiguration[i];
 				let active = (regexList.active === undefined) ? true : regexList.active;
 				// stock languages
+    			currentRegexPath = `${rootPath}/[${i}]/languageRegex`;
 				let languages = (regexList.languageIds) ? regexList.languageIds : undefined;
 				let languageRegex = new RegExp((regexList.languageRegex) ? regexList.languageRegex : '.*', '');
 				languageRegex.test();
+    			currentRegexPath = `${rootPath}/[${i}]/filenameRegex`;
 				let filenameRegex = new RegExp((regexList.filenameRegex) ? regexList.filenameRegex : '.*', '');
 				filenameRegex.test();
 				let regexes = [];
 				if (regexList.regexes?.length > 0) {
 					for (let j = regexList.regexes.length - 1; j >= 0; j--) {
-						regexes.push(loadRegexes(configuration, regexList.regexes[j]));
+						regexes.push(loadRegexes(`${rootPath}/[${i}]/regexes/[${j}]`, configuration, regexList.regexes[j]));
 					}
 				}
 				// take the first regex if name not exists
@@ -607,8 +612,33 @@ class Parser {
 				decorationStartIndex = this.decorations.length;
 			}
 			catch (error) {
-				log.error(`${this.scope}: ${error.toString()}`);
-				vscode.window.showErrorMessage(error.toString(), 'Close');
+				log.error(`${this.scope}: ${error.toString()}: ${regex_path}`);
+				const searchPath = `${currentRegexPath}`;
+				vscode.window.showErrorMessage(error.toString(), 'Edit', 'Close').then(choice => {
+					if (choice === 'Edit') {
+						// is global setting
+						if (searchPath.startsWith("/highlight.regex.regexes")) {
+							// first check remote setting
+							if (vscode.env.remoteName !== undefined && globalSettingRemote === undefined) {
+								globalSettingRemote = manager.setting.useRemoteSetting();
+								log.debug(`globalSettingRemote: ${globalSettingRemote}`);
+								manager.scopeManager.global.updateTreeTitle();
+							}
+							if (vscode.env.remoteName !== undefined && globalSettingRemote) {
+								manager.setting.focus('workbench.action.openRemoteSettingsFile', searchPath);
+							}
+							else if (manager.scopeManager.global.getConfigurationTarget() != vscode.ConfigurationTarget.Workspace) {
+								manager.setting.focus('workbench.action.openSettingsJson', searchPath);
+							}
+							else {
+								manager.setting.focus('workbench.action.openWorkspaceSettingsFile', searchPath);
+							}
+						}
+						else {
+							manager.setting.focus('workbench.action.openWorkspaceSettingsFile', searchPath);
+						}
+					}
+				});
 			}
 		}
 	}
