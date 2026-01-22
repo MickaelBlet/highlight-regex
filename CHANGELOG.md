@@ -1,5 +1,11 @@
 # Change Log
 
+## Version 3.0.0: January 24, 2026
+### Major Update
+* Complete TypeScript migration with modular architecture.
+* Refactored from single JavaScript file to organized TypeScript modules.
+* Improved type safety with strict TypeScript mode.
+
 ## Version 2.3.3: November 30, 2025
 ### Fix
 * Parsing regex setting error.

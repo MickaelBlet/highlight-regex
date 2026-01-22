@@ -1,0 +1,37 @@
+# Source files (TypeScript)
+src/**
+**/*.ts
+**/*.map
+
+# Build and development files
+scripts/**
+.vscode/**
+.vscode-test/**
+tsconfig.json
+.eslintrc.json
+.gitignore
+.gitattributes
+
+# Documentation and project files
+CLAUDE.md
+*.md
+!README.md
+!CHANGELOG.md
+!LICENSE
+
+# Test files
+test/**
+**/*.test.js
+**/*.test.ts
+
+# Dependencies
+node_modules/**
+
+# Git
+.git/**
+.github/**
+
+# Miscellaneous
+.DS_Store
+*.vsix
+**/*.log

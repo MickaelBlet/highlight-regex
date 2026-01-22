@@ -1,3 +1,10 @@
 # vscode package
 *.vsix
 /tests
+
+# TypeScript compilation output
+/out
+*.js.map
+
+# Dependencies
+/node_modules

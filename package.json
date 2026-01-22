@@ -2,13 +2,13 @@
 	"name": "highlight-regex",
 	"displayName": "Highlight - Regex",
 	"description": "Highlight (decorate) what you want with Regex",
-	"version": "2.3.3",
+	"version": "3.0.0",
 	"publisher": "mblet",
 	"engines": {
 		"vscode": "^1.80.0"
 	},
-	"main": "./extension.js",
-	"browser": "./extension.js",
+	"main": "./out/extension.js",
+	"browser": "./out/extension.js",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
@@ -25,6 +25,17 @@
 		"workspace"
 	],
 	"icon": "images/icon.drawio.png",
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile"
+	},
+	"devDependencies": {
+		"@types/node": "^20.x",
+		"@types/vscode": "^1.80.0",
+		"typescript": "^5.3.3"
+	},
 	"contributes": {
 		"viewsContainers": {
 			"activitybar": [
