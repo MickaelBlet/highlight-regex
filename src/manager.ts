@@ -65,7 +65,7 @@ export class Manager {
         this.globalSettingRemote = undefined;
         this.configuration = vscode.workspace.getConfiguration(extensionId);
         this.scopeManager = new ScopeManager(this.configuration);
-        this.setting = new Setting();
+        this.setting = new Setting(context);
         this.quickpick = new QuickPick(this.scopeManager);
         this.visible = new Visible(this.configuration);
         this.active = new Active();

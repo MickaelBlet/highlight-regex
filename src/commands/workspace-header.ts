@@ -58,33 +58,19 @@ export function registerWorkspaceHeaderCommands(): void {
             log.debug('command: highlight.regex.workspace.addEntry');
             try {
                 await manager.scopeManager.workspace.updateConfiguration();
-                await vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile',
-                    {
-                        revealSetting: {
-                            key: manager.scopeManager.workspace.propertyName,
-                            edit: true
-                        }
-                    }
-                );
-                // wait executeCommand can be not focus
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                // get informations from focused editor
-                while (vscode.window.activeTextEditor == undefined ||
-                    vscode.window.activeTextEditor == null ||
-                    vscode.window.activeTextEditor?.document?.languageId != 'jsonc') {
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    log.debug(`wait...`);
-                }
-                const editor = vscode.window.activeTextEditor;
-                let next = manager.scopeManager.workspace.regexes.length > 0 ? ',' : '';
-                let snippet = JSON.parse(JSON.stringify(manager.configuration.defaultAddSnippet));
+                let snippet = manager.configuration.defaultAddSnippet;
+                // is array
                 if (typeof snippet !== 'string') {
                     snippet = snippet.join('\n');
                 }
-                editor.insertSnippet(new vscode.SnippetString(`${snippet}${next}`));
+                const next = manager.scopeManager.workspace.regexes.length > 0 ? ',' : '';
+                await manager.setting.insertSnippet('workbench.action.openWorkspaceSettingsFile',
+                                                    `/${manager.scopeManager.workspace.propertyName}`,
+                                                    `${snippet}${next}`);
             }
             catch (error) {
-                log.error(`command: highlight.regex.global.addEntry: ${(error instanceof Error ? error.toString() : String(error))}`);
+                log.error(`command: highlight.regex.workspace.addEntry: ${(error instanceof Error ? error.toString() : String(error))}`);
+                vscode.window.showErrorMessage(`${(error instanceof Error ? error.toString() : String(error))}`);
             }
         })
     );

@@ -58,6 +58,12 @@ export function registerGlobalHeaderCommands(): void {
             log.debug('command: highlight.regex.global.addEntry');
             try {
                 await manager.scopeManager.global.updateConfiguration();
+                let snippet = manager.configuration.defaultAddSnippet;
+                // is array
+                if (typeof snippet !== 'string') {
+                    snippet = snippet.join('\n');
+                }
+                const next = manager.scopeManager.global.regexes.length > 0 ? ',' : '';
                 // first check remote setting
                 if (vscode.env.remoteName !== undefined && manager.globalSettingRemote === undefined) {
                     manager.globalSettingRemote = await manager.setting.useRemoteSetting();
@@ -66,57 +72,26 @@ export function registerGlobalHeaderCommands(): void {
                 }
                 // run on remote
                 if (vscode.env.remoteName !== undefined && manager.globalSettingRemote) {
-                    await vscode.commands.executeCommand('workbench.action.openRemoteSettingsFile',
-                        {
-                            revealSetting: {
-                                key: manager.scopeManager.global.propertyName,
-                                edit: true
-                            }
-                        }
-                    );
+                    await manager.setting.insertSnippet('workbench.action.openRemoteSettingsFile',
+                                                        `/${manager.scopeManager.global.propertyName}`,
+                                                        `${snippet}${next}`);
                 }
                 else {
                     if (manager.scopeManager.global.getConfigurationTarget() != vscode.ConfigurationTarget.Workspace) {
-                        await vscode.commands.executeCommand('workbench.action.openSettingsJson',
-                            {
-                                revealSetting: {
-                                    key: manager.scopeManager.global.propertyName,
-                                    edit: true
-                                }
-                            }
-                        );
+                        await manager.setting.insertSnippet('workbench.action.openSettingsJson',
+                                                            `/${manager.scopeManager.global.propertyName}`,
+                                                            `${snippet}${next}`);
                     }
                     else {
-                        await vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile',
-                            {
-                                revealSetting: {
-                                    key: manager.scopeManager.global.propertyName,
-                                    edit: true
-                                }
-                            }
-                        );
+                        await manager.setting.insertSnippet('workbench.action.openWorkspaceSettingsFile',
+                                                            `/${manager.scopeManager.global.propertyName}`,
+                                                            `${snippet}${next}`);
                     }
                 }
-
-                // wait executeCommand can be not focus
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                // get informations from focused editor
-                while (vscode.window.activeTextEditor == undefined ||
-                    vscode.window.activeTextEditor == null ||
-                    vscode.window.activeTextEditor?.document?.languageId != 'jsonc') {
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    log.debug(`wait...`);
-                }
-                const editor = vscode.window.activeTextEditor;
-                let next = manager.scopeManager.global.regexes.length > 0 ? ',' : '';
-                let snippet = JSON.parse(JSON.stringify(manager.configuration.defaultAddSnippet));
-                if (typeof snippet !== 'string') {
-                    snippet = snippet.join('\n');
-                }
-                editor.insertSnippet(new vscode.SnippetString(`${snippet}${next}`));
             }
             catch (error) {
                 log.error(`command: highlight.regex.global.addEntry: ${(error instanceof Error ? error.toString() : String(error))}`);
+                vscode.window.showErrorMessage(`${(error instanceof Error ? error.toString() : String(error))}`);
             }
         })
     );
