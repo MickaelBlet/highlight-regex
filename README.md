@@ -101,39 +101,37 @@ The first object level can include the following properties:
     "languageRegex": "\\b(c|cpp|go|java|javascript|php|rust|typescript)\\b",
     "regexes": [
       {
-        // regex to find all within comments
+        // string and comment
         "regex": [
-          "(?:",
-          "\"(?:[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\"",
+          "\"(?:[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\"", // double quote string
           "|",
-          "'(?:[^'\\\\]*(?:\\\\.[^'\\\\]*)*)'",
-          ")",
+          "'(?:[^'\\\\]*(?:\\\\.[^'\\\\]*)*)'", // simple quote string
           "|",
-          "(?<comment>",
-          "(?:/\\*[^]*?\\*/)",
-          "|",
-          "(?://[^]*?(?:(?<!\\\\)$))",
+          "(?<comment>", // "comment" named group
+            "(?:/\\*[^]*?\\*/)", // block comment
+            "|",
+            "(?://[^]*?(?:(?<!\\\\)$))", // inline comment
           ")"
         ],
         "regexFlag": "gm",
         "regexLimit": 25000,
         "regexes": [
           {
-            "index": "comment", // match regex named group (comment)
+            "index": "comment", // use "comment" named group
             "regex": [
-              "\\b(?<todo>TODO)\\b",
+              "\\b(?<todo>TODO)\\b", // "todo" named group
               "|",
-              "\\b(?<critical>CRITICAL)\\b"
+              "\\b(?<critical>CRITICAL)\\b" // "critical" named group
             ],
-            "regexFlag": "gmi",
+            "regexFlag": "gmi", // case insensitive
             "regexLimit": 25000,
             "decorations": [
               {
-                "index": "todo", // match regex named group (todo)
+                "index": "todo", // use "todo" named group
                 "borderRadius": "4px",
                 "fontWeight": "bold",
                 "overviewRulerColor": "#FF9900FF",
-                "overviewRulerLane": 4,
+                "overviewRulerLane": 4, // right position on ruler
                 "light": {
                   "color": "#000000",
                   "backgroundColor": "#FF990050",
@@ -146,11 +144,11 @@ The first object level can include the following properties:
                 }
               },
               {
-                "index": "critical", // match regex named group (critical)
+                "index": "critical", // use "critical" named group
                 "borderRadius": "4px",
                 "fontWeight": "bold",
                 "overviewRulerColor": "#FF0000FF",
-                "overviewRulerLane": 4,
+                "overviewRulerLane": 4, // right position on ruler
                 "light": {
                   "color": "#000000",
                   "backgroundColor": "#FF000050",
@@ -172,5 +170,5 @@ The first object level can include the following properties:
 ```
 
 <p align="center">
-  <img src="images/settingRegexes.drawio.png" >
+  <img src="images/settingRegexes.png" >
 </p>

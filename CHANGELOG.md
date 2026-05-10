@@ -1,6 +1,10 @@
 # Change Log
 
-## Version 3.0.0: January 24, 2026
+## Version 3.0.0: May 10, 2026
+### Documentation
+* Add "Highlight extra space end of line" example to `examples.md`.
+* Replace `.drawio.png` example screenshots with rendered `.png` images.
+* Add `generate_images/` HTML/CSS sources and `html_to_png.py` script used to render the example screenshots.
 ### Major Update
 * Complete TypeScript migration with modular architecture.
 * Refactored from single JavaScript file to organized TypeScript modules.

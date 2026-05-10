@@ -28,7 +28,7 @@
 ```
 
 <p align="center">
-  <img src="images/simpleExample.drawio.png" >
+  <img src="images/simpleExample.png" >
 </p>
 
 ## Simple example with hoverMessage
@@ -64,7 +64,44 @@
 ```
 
 <p align="center">
-  <img src="images/hoverMessage.drawio.png" >
+  <img src="images/hoverMessage.png" >
+</p>
+
+## Highlight extra space end fo line
+```jsonc
+"highlight.regex.regexes": [
+    {
+        "name": "Extra Space",
+        "description": "Show the extra space(s) end of line",
+        "regexes": [
+            {
+                "regex": "([ \t]+)$",
+                "regexFlag": "gm",
+                "regexLimit": 1000,
+                "decorations": [
+                    {
+                        "index": 1,
+                        "overviewRulerColor": "#FF0000AA",
+                        "overviewRulerLane": 4,
+                        "borderRadius": "4px",
+                        "light": {
+                            "backgroundColor": "#FF000090",
+                            "border": "1px solid #FF000060"
+                        },
+                        "dark": {
+                            "backgroundColor": "#FF000060",
+                            "border": "1px solid #FF000090"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]
+```
+
+<p align="center">
+  <img src="images/extraSpace.png" >
 </p>
 
 ## Highlight member variables in cpp and keyword this
@@ -114,7 +151,7 @@
 ```
 
 <p align="center">
-  <img src="images/memberVariableThis.drawio.png" >
+  <img src="images/memberVariableThis.png" >
 </p>
 
 ## Todo and Critical for python
@@ -175,7 +212,7 @@
 ]
 ```
 <p align="center">
-  <img src="images/pythonTodoCritical.drawio.png" >
+  <img src="images/pythonTodoCritical.png" >
 </p>
 
 ## CMake variable in string
@@ -213,7 +250,7 @@
 ```
 
 <p align="center">
-  <img src="images/cmakeStringVariable.drawio.png" >
+  <img src="images/cmakeStringVariable.png" >
 </p>
 
 ## Easy read big number
@@ -321,7 +358,7 @@
 ```
 
 <p align="center">
-  <img src="images/bigNumber.drawio.png" >
+  <img src="images/bigNumber.png" >
 </p>
 
 ## Code block
@@ -349,5 +386,5 @@
 ```
 
 <p align="center">
-  <img src="images/codeBlock.drawio.png" >
+  <img src="images/codeBlock.png" >
 </p>

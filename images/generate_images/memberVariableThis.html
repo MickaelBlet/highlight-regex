@@ -1,0 +1,30 @@
+<html>
+<head>
+<link rel="stylesheet" href="style.css">
+<style>
+    .highlight {
+        font-weight: bold;
+        text-shadow: 0px 0px 10px;
+        font-style: italic;
+    }
+    .this {
+        font-weight: bold;
+        font-style: italic;
+    }
+</style>
+</head>
+<body>
+<pre>
+<span class="kw">class</span> <span class="class">Foo</span> {
+  <span class="kw">public</span>:
+    <span class="fnc">Foo</span>():<span class="fnc highlight">value_</span>(<span class="number">42</span>), <span class="fnc">__reserved__</span>(<span class="number">42</span>) {}
+    <span class="kw">void</span> <span class="fnc">set</span>(<span class="kw">int</span> value) {
+        <span class="kw this">this</span>-&gt;<span class="mvar highlight">value_</span> = value; <span class="cmt"></span>
+    }
+  <span class="kw">private</span>:
+    <span class="kw">int</span> <span class="mvar highlight">value_</span>;
+    <span class="kw">int</span> <span class="mvar">__reserved__</span>; <span class="cmt">// not highlighted</span>
+};
+</pre>
+</body>
+</html>

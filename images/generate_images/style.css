@@ -1,0 +1,70 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 20px;
+}
+
+pre {
+    margin: auto;
+    padding: 10px;
+    background: #181818;
+    color: #CCCCCC;
+    border-radius: 4px;
+    border: 1px solid #333333;
+    width: fit-content;
+    line-height: 25px;
+}
+
+.fnc {
+    color: #DCDCAA;
+}
+
+.cmt {
+    color: #6A9955;
+    font-style: italic;
+}
+
+.str {
+    color: #CE9178;
+}
+
+.escape {
+    color: #D7BA7D;
+}
+
+.kw {
+    color: #569CD6;
+}
+
+.mvar {
+    color: #9CDCFE;
+}
+
+.number {
+    color: #B5CEA8;
+}
+
+.class {
+    color: #4EC9B0;
+}
+
+.kww {
+    color: #C586C0;
+}
+
+.todo {
+    background: #FF990090;
+    border: 1px solid #FF990050;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #FFFFFF;
+}
+
+.crit {
+    background: #FF000090;
+    border: 1px solid #FF000050;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #FFFFFF;
+}
