@@ -34,7 +34,8 @@ export default class JsoncSettingParser {
     dict: any;
 
     constructor(text: string) {
-        this.text = text;
+        // append a '\0' sentinel so every scan stops at the end of the text
+        this.text = text + '\0';
         this.index = 0;
         this.ranges = {};
         this.load();
@@ -56,7 +57,7 @@ export default class JsoncSettingParser {
             default:
                 throw "Not a valid start character";
         }
-        if (this.index != this.text.length) {
+        if (this.index != this.text.length - 1) {
             throw "Not a valid end character";
         }
     }

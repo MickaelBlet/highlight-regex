@@ -26,7 +26,7 @@ import * as vscode from 'vscode';
 import { extensionId } from '../constants';
 import { log } from '../logger';
 import { manager } from '../manager';
-import { addHiddenMatchGroups } from './add-hidden-match-groups';
+import { getNamedGroupIndexes } from './named-groups';
 
 interface Configuration {
     cacheLimit: number;
@@ -66,9 +66,6 @@ interface DecorationItem {
 interface LoadedRegex {
     index: number | string;
     regexRegExp: RegExp;
-    matchIndexToReal: { [key: number]: number; };
-    matchNamedToReal: { [key: string]: number; };
-    matchDependIndexes: { [key: number]: number[]; };
     regexCount: number;
     regexLimit: number;
     regexes: LoadedRegex[];
@@ -142,12 +139,16 @@ class Parser {
                 regexStr = regexStr.join('');
             }
             currentRegexPath = `${childPath}/regex`;
-            let regexRegExp = new RegExp(regexStr, (regex.regexFlag) ? regex.regexFlag : configuration.defaultRegexFlag);
+            let regexFlag = (regex.regexFlag) ? regex.regexFlag : configuration.defaultRegexFlag;
+            // force 'g' to iterate on all matches and 'd' to get capture group positions
+            for (const flag of 'gd') {
+                if (!regexFlag.includes(flag)) {
+                    regexFlag += flag;
+                }
+            }
+            let regexRegExp = new RegExp(regexStr, regexFlag);
             regexRegExp.test('');
-            // add hide groups: transform 'a(?: )bc(def(ghi)xyz)' to '(a)((?: ))(bc)((def)(ghi)(xyz))'
-            let { sRegex, matchIndexToReal, matchNamedToReal, matchDependIndexes } = addHiddenMatchGroups(regexStr);
-            regexRegExp = new RegExp(sRegex, (regex.regexFlag) ? regex.regexFlag : configuration.defaultRegexFlag);
-            regexRegExp.test('');
+            let namedGroupIndexes = getNamedGroupIndexes(regexStr);
             let decorationList: DecorationItem[] = [];
             let regexList: LoadedRegex[] = [];
             if (regex.regexes?.length && regex.regexes.length > 0) {
@@ -157,30 +158,14 @@ class Parser {
             }
             if (regex.decorations?.length && regex.decorations.length > 0) {
                 let decorationsCopy: DecorationConfig[] = JSON.parse(JSON.stringify(regex.decorations));
-                // sort decoration by real index
-                decorationsCopy.sort((a, b) => {
-                    let keyA = 0;
-                    let keyB = 0;
-                    if (a.index) {
-                        if (typeof a.index === 'string') {
-                            keyA = matchNamedToReal[a.index];
-                        }
-                        else {
-                            keyA = matchIndexToReal[a.index];
-                        }
+                // sort decoration by group index
+                let getGroupIndex = (index: number | string | undefined): number => {
+                    if (typeof index === 'string') {
+                        return namedGroupIndexes[index] ?? 0;
                     }
-                    if (b.index) {
-                        if (typeof b.index === 'string') {
-                            keyB = matchNamedToReal[b.index];
-                        }
-                        else {
-                            keyB = matchIndexToReal[b.index];
-                        }
-                    }
-                    if (keyA < keyB) return 1;
-                    if (keyA > keyB) return -1;
-                    return 0;
-                });
+                    return index ?? 0;
+                };
+                decorationsCopy.sort((a, b) => getGroupIndex(b.index) - getGroupIndex(a.index));
                 for (let i = 0; i < decorationsCopy.length; i++) {
                     let decoration = decorationsCopy[i];
                     let index: number | string = (decoration.index !== undefined) ? decoration.index : 0;
@@ -213,9 +198,6 @@ class Parser {
             return {
                 index: (regex.index !== undefined) ? regex.index : 0,
                 regexRegExp: regexRegExp,
-                matchIndexToReal: matchIndexToReal,
-                matchNamedToReal: matchNamedToReal,
-                matchDependIndexes: matchDependIndexes,
                 regexCount: 0,
                 regexLimit: (regex.regexLimit) ? regex.regexLimit : configuration.defaultRegexLimit,
                 regexes: regexList,
@@ -369,6 +351,14 @@ class Parser {
         for (let i = 0; i < this.decorations.length; i++) {
             cacheRanges.push([]);
         }
+        // get the [start, end] of a not empty capture group
+        let getGroupRange = (search: RegExpExecArray, index: number | string): [number, number] | undefined => {
+            let range = (typeof index === 'number') ? search.indices?.[index] : search.indices?.groups?.[index];
+            if (range === undefined || range[1] <= range[0]) {
+                return undefined;
+            }
+            return range;
+        }
         var recurseSearchDecorations = (regex: any, text: string, index: number = 0): void => {
             let search: RegExpExecArray | null;
             regex.regexCount = 0;
@@ -389,23 +379,11 @@ class Parser {
                         if (decoration.decoration === undefined) {
                             continue;
                         }
-                        let decorationRealIndex: number;
-                        if (typeof decoration.index === 'number') {
-                            decorationRealIndex = regex.matchIndexToReal[decoration.index];
-                        }
-                        else {
-                            decorationRealIndex = regex.matchNamedToReal[decoration.index];
-                        }
-                        if (decorationRealIndex < search.length && search[decorationRealIndex] && search[decorationRealIndex].length > 0) {
-                            let decorationIndex = search.index;
-                            for (let j = 0; j < regex.matchDependIndexes[decorationRealIndex].length; j++) {
-                                if (search[regex.matchDependIndexes[decorationRealIndex][j]]) {
-                                    decorationIndex += search[regex.matchDependIndexes[decorationRealIndex][j]].length;
-                                }
-                            }
+                        const decorationRange = getGroupRange(search, decoration.index);
+                        if (decorationRange !== undefined) {
                             let vsRange = new vscode.Range(
-                                editor.document.positionAt(index + decorationIndex),
-                                editor.document.positionAt(index + decorationIndex + search[decorationRealIndex].length)
+                                editor.document.positionAt(index + decorationRange[0]),
+                                editor.document.positionAt(index + decorationRange[1])
                             );
                             if (decoration.hoverMessage) {
                                 let htmlHovermessage = new vscode.MarkdownString();
@@ -431,21 +409,9 @@ class Parser {
                 if (regex.regexes && regex.regexes.length > 0) {
                     for (let i = 0; i < regex.regexes.length; i++) {
                         const insideRegex = regex.regexes[i];
-                        let insideRegexRealIndex: number;
-                        if (typeof insideRegex.index === 'number') {
-                            insideRegexRealIndex = regex.matchIndexToReal[insideRegex.index];
-                        }
-                        else {
-                            insideRegexRealIndex = regex.matchNamedToReal[insideRegex.index];
-                        }
-                        if (insideRegexRealIndex < search.length && search[insideRegexRealIndex] && search[insideRegexRealIndex].length > 0) {
-                            let regexIndex = search.index;
-                            for (let j = 0; j < regex.matchDependIndexes[insideRegexRealIndex].length; j++) {
-                                if (search[regex.matchDependIndexes[insideRegexRealIndex][j]]) {
-                                    regexIndex += search[regex.matchDependIndexes[insideRegexRealIndex][j]].length;
-                                }
-                            }
-                            recurseSearchDecorations(insideRegex, search[insideRegexRealIndex], index + regexIndex);
+                        const insideRegexRange = getGroupRange(search, insideRegex.index);
+                        if (insideRegexRange !== undefined) {
+                            recurseSearchDecorations(insideRegex, text.substring(insideRegexRange[0], insideRegexRange[1]), index + insideRegexRange[0]);
                         }
                     }
                 }

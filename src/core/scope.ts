@@ -168,7 +168,7 @@ export class Scope {
         this.resetAllDecorations();
         if (index === this.regexes.length - 1) {
             this.regexes.splice(0, 0, this.regexes.splice(index, 1)[0]);
-            index = this.regexes.length - 1;
+            index = 0;
         }
         else {
             this.regexes.splice(index + 1, 0, this.regexes.splice(index, 1)[0]);

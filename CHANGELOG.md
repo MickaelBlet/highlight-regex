@@ -1,5 +1,18 @@
 # Change Log
 
+## [Unreleased]
+### Fix
+* Freeze of the extension host when a settings file is truncated (unterminated string, key or comment).
+* Wrong decoration position with an escaped `\|`, with a group inside a repeated group, or with an invalid backreference.
+* Duplicated decorations when `regexFlag` does not contain `g` (`g` is now always added).
+* `cacheLimit`, `defaultRegexLimit` and `defaultRegexFlag` changes are now applied without reloading.
+* Wrong item selected after moving the last entry down.
+* `Toggle check all` ignored entries without `active` property.
+### Breaking Change
+* Capture group positions now use the native `d` regex flag (`indices`).
+  A repeated capture group (e.g. `(\w\s)+`) now decorates only its last repetition, as in standard JavaScript.
+  To decorate the whole sequence, wrap it: `((?:\w\s)+)`.
+
 ## Version 3.0.0: May 10, 2026
 ### Documentation
 * Add "Highlight extra space end of line" example to `examples.md`.

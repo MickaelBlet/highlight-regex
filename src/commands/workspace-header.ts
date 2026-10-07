@@ -32,7 +32,8 @@ export function registerWorkspaceHeaderCommands(): void {
             log.debug('command: highlight.regex.workspace.toggleCheckAll');
             let count = 0;
             for (let i = 0; i < manager.scopeManager.workspace.regexes.length; i++) {
-                if (manager.scopeManager.workspace.regexes[i].active) {
+                // active is true by default
+                if (manager.scopeManager.workspace.regexes[i].active !== false) {
                     count++;
                 }
             }

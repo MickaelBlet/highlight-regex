@@ -64,22 +64,29 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             }
         }
         manager.configuration = vscode.workspace.getConfiguration(extensionId);
+        // settings used by the parser of all scopes
+        const parserConfigurationChanged = ['cacheLimit', 'defaultRegexLimit', 'defaultRegexFlag'].some(
+            (key) => event.affectsConfiguration(`${extensionId}.${key}`)
+        );
         for (const scopeKey in manager.scopeManager.map) {
             if (manager.scopeManager.map.hasOwnProperty(scopeKey)) {
-                if (event.affectsConfiguration(manager.scopeManager.map[scopeKey].propertyName)) {
-                    log.debug(`event: onDidChangeConfiguration: ${manager.scopeManager.map[scopeKey].propertyName} updated`);
+                const scope = manager.scopeManager.map[scopeKey];
+                scope.configuration = manager.configuration;
+                const regexesChanged = event.affectsConfiguration(scope.propertyName);
+                if (regexesChanged) {
+                    log.debug(`event: onDidChangeConfiguration: ${scope.propertyName} updated`);
                     // Check if global on remote setting
                     if (scopeKey === 'global' && vscode.env.remoteName !== undefined) {
                         manager.globalSettingRemote = await manager.setting.useRemoteSetting();
                         log.debug(`globalSettingRemote: ${manager.globalSettingRemote}`);
                     }
                     // Update title of tree
-                    manager.scopeManager.map[scopeKey].updateTreeTitle();
-                    if (manager.scopeManager.map[scopeKey].configurationChangeEvent) {
-                        manager.scopeManager.map[scopeKey].resetAllDecorations();
-                        manager.scopeManager.map[scopeKey].loadFromConfiguration();
-                        manager.scopeManager.map[scopeKey].updateAllDecorations();
-                    }
+                    scope.updateTreeTitle();
+                }
+                if ((regexesChanged && scope.configurationChangeEvent) || parserConfigurationChanged) {
+                    scope.resetAllDecorations();
+                    scope.loadFromConfiguration();
+                    scope.updateAllDecorations();
                 }
             }
         }
