@@ -32,7 +32,8 @@ export function registerGlobalHeaderCommands(): void {
             log.debug('command: highlight.regex.global.toggleCheckAll');
             let count = 0;
             for (let i = 0; i < manager.scopeManager.global.regexes.length; i++) {
-                if (manager.scopeManager.global.regexes[i].active) {
+                // active is true by default
+                if (manager.scopeManager.global.regexes[i].active !== false) {
                     count++;
                 }
             }
