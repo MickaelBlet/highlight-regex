@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## Version 3.0.0: October 14, 2026
 ### New Features
 * Toggle button in the Visible, Active and Custom views to show matches by regex, capture group and child regex.
 ### Fix
