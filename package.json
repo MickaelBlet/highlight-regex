@@ -143,6 +143,126 @@
 					"group": "navigation@1"
 				},
 				{
+					"command": "highlight.regex.visible.showDetail",
+					"when": "view == highlight.regex.view.visible && !highlight.regex.visible.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.visible.hideDetail",
+					"when": "view == highlight.regex.view.visible && highlight.regex.visible.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.active.showDetail",
+					"when": "view == highlight.regex.view.active && !highlight.regex.active.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.active.hideDetail",
+					"when": "view == highlight.regex.view.active && highlight.regex.active.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom1.showDetail",
+					"when": "view == highlight.regex.view.custom1 && highlight.regex.custom1.active && !highlight.regex.custom1.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom1.hideDetail",
+					"when": "view == highlight.regex.view.custom1 && highlight.regex.custom1.active && highlight.regex.custom1.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom2.showDetail",
+					"when": "view == highlight.regex.view.custom2 && highlight.regex.custom2.active && !highlight.regex.custom2.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom2.hideDetail",
+					"when": "view == highlight.regex.view.custom2 && highlight.regex.custom2.active && highlight.regex.custom2.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom3.showDetail",
+					"when": "view == highlight.regex.view.custom3 && highlight.regex.custom3.active && !highlight.regex.custom3.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom3.hideDetail",
+					"when": "view == highlight.regex.view.custom3 && highlight.regex.custom3.active && highlight.regex.custom3.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom4.showDetail",
+					"when": "view == highlight.regex.view.custom4 && highlight.regex.custom4.active && !highlight.regex.custom4.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom4.hideDetail",
+					"when": "view == highlight.regex.view.custom4 && highlight.regex.custom4.active && highlight.regex.custom4.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom5.showDetail",
+					"when": "view == highlight.regex.view.custom5 && highlight.regex.custom5.active && !highlight.regex.custom5.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom5.hideDetail",
+					"when": "view == highlight.regex.view.custom5 && highlight.regex.custom5.active && highlight.regex.custom5.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom6.showDetail",
+					"when": "view == highlight.regex.view.custom6 && highlight.regex.custom6.active && !highlight.regex.custom6.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom6.hideDetail",
+					"when": "view == highlight.regex.view.custom6 && highlight.regex.custom6.active && highlight.regex.custom6.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom7.showDetail",
+					"when": "view == highlight.regex.view.custom7 && highlight.regex.custom7.active && !highlight.regex.custom7.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom7.hideDetail",
+					"when": "view == highlight.regex.view.custom7 && highlight.regex.custom7.active && highlight.regex.custom7.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom8.showDetail",
+					"when": "view == highlight.regex.view.custom8 && highlight.regex.custom8.active && !highlight.regex.custom8.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom8.hideDetail",
+					"when": "view == highlight.regex.view.custom8 && highlight.regex.custom8.active && highlight.regex.custom8.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom9.showDetail",
+					"when": "view == highlight.regex.view.custom9 && highlight.regex.custom9.active && !highlight.regex.custom9.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom9.hideDetail",
+					"when": "view == highlight.regex.view.custom9 && highlight.regex.custom9.active && highlight.regex.custom9.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom10.showDetail",
+					"when": "view == highlight.regex.view.custom10 && highlight.regex.custom10.active && !highlight.regex.custom10.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom10.hideDetail",
+					"when": "view == highlight.regex.view.custom10 && highlight.regex.custom10.active && highlight.regex.custom10.detail.active",
+					"group": "navigation@0"
+				},
+				{
 					"command": "highlight.regex.custom1.reference",
 					"when": "view == highlight.regex.view.custom1 && highlight.regex.custom1.active",
 					"group": "navigation@1"
@@ -452,6 +572,150 @@
 				"enablement": "view == highlight.regex.view.visible && !highlight.regex.visible.listView.active",
 				"title": "View as List",
 				"icon": "$(list-tree)"
+			},
+			{
+				"command": "highlight.regex.visible.showDetail",
+				"enablement": "view == highlight.regex.view.visible",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.visible.hideDetail",
+				"enablement": "view == highlight.regex.view.visible",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+			{
+				"command": "highlight.regex.active.showDetail",
+				"enablement": "view == highlight.regex.view.active",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.active.hideDetail",
+				"enablement": "view == highlight.regex.view.active",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+			{
+				"command": "highlight.regex.custom1.showDetail",
+				"enablement": "view == highlight.regex.view.custom1",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.custom1.hideDetail",
+				"enablement": "view == highlight.regex.view.custom1",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+			{
+				"command": "highlight.regex.custom2.showDetail",
+				"enablement": "view == highlight.regex.view.custom2",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.custom2.hideDetail",
+				"enablement": "view == highlight.regex.view.custom2",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+			{
+				"command": "highlight.regex.custom3.showDetail",
+				"enablement": "view == highlight.regex.view.custom3",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.custom3.hideDetail",
+				"enablement": "view == highlight.regex.view.custom3",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+			{
+				"command": "highlight.regex.custom4.showDetail",
+				"enablement": "view == highlight.regex.view.custom4",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.custom4.hideDetail",
+				"enablement": "view == highlight.regex.view.custom4",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+			{
+				"command": "highlight.regex.custom5.showDetail",
+				"enablement": "view == highlight.regex.view.custom5",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.custom5.hideDetail",
+				"enablement": "view == highlight.regex.view.custom5",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+			{
+				"command": "highlight.regex.custom6.showDetail",
+				"enablement": "view == highlight.regex.view.custom6",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.custom6.hideDetail",
+				"enablement": "view == highlight.regex.view.custom6",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+			{
+				"command": "highlight.regex.custom7.showDetail",
+				"enablement": "view == highlight.regex.view.custom7",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.custom7.hideDetail",
+				"enablement": "view == highlight.regex.view.custom7",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+			{
+				"command": "highlight.regex.custom8.showDetail",
+				"enablement": "view == highlight.regex.view.custom8",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.custom8.hideDetail",
+				"enablement": "view == highlight.regex.view.custom8",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+			{
+				"command": "highlight.regex.custom9.showDetail",
+				"enablement": "view == highlight.regex.view.custom9",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.custom9.hideDetail",
+				"enablement": "view == highlight.regex.view.custom9",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+			{
+				"command": "highlight.regex.custom10.showDetail",
+				"enablement": "view == highlight.regex.view.custom10",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.custom10.hideDetail",
+				"enablement": "view == highlight.regex.view.custom10",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
 			},
 			{
 				"command": "highlight.regex.custom1.reference",

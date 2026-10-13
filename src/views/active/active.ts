@@ -30,8 +30,12 @@ import ActiveFileDecorationProvider from './active-decoration';
 export default class Active {
     treeDataProvider: ActiveTreeDataProvider;
     tree: vscode.TreeView<any>;
+    detail: boolean;
 
     constructor() {
+        this.detail = false;
+        vscode.commands.executeCommand(`setContext`, `highlight.regex.active.detail.active`, this.detail);
+
         this.treeDataProvider = new ActiveTreeDataProvider();
         this.tree = vscode.window.createTreeView(`${extensionId}.view.active`, {
             treeDataProvider: this.treeDataProvider,
@@ -62,6 +66,12 @@ export default class Active {
     update(activeEditor: vscode.TextEditor | undefined): void {
         // take all ranges from cached informations of scope parser
         this.treeDataProvider.updateActiveEditor(activeEditor);
+    }
+
+    setDetail(detail: boolean): void {
+        this.detail = detail;
+        vscode.commands.executeCommand(`setContext`, `highlight.regex.active.detail.active`, this.detail);
+        this.update(vscode.window.activeTextEditor);
     }
 
 }

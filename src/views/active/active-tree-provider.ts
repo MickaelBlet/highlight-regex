@@ -25,12 +25,7 @@ SOFTWARE.
 import * as vscode from 'vscode';
 import { log } from '../../logger';
 import { manager } from '../../manager';
-
-interface TreeItemChild extends vscode.TreeItem {
-    context?: string;
-    range?: vscode.Range;
-    childrens?: TreeItemChild[];
-}
+import { TreeItemChild, buildRegexItems } from '../../treeview/occurrence-tree';
 
 export default class ActiveTreeDataProvider implements vscode.TreeDataProvider<TreeItemChild> {
     items: TreeItemChild[];
@@ -93,63 +88,10 @@ export default class ActiveTreeDataProvider implements vscode.TreeDataProvider<T
         }
         let items: TreeItemChild[] = [];
         try {
-            let activeEditorKey = activeEditor.document.uri.toString(true);
-            for (let scopeKey in manager.scopeManager.map) {
-                if (manager.scopeManager.map.hasOwnProperty(scopeKey)) {
-                    const cacheEditors = manager.scopeManager.map[scopeKey].parser.cacheEditors;
-                    const regexes = manager.scopeManager.map[scopeKey].parser.regexes;
-                    if (activeEditorKey in cacheEditors && cacheEditors[activeEditorKey] !== undefined) {
-                        const cacheRanges = cacheEditors[activeEditorKey].ranges;
-                        for (let i = 0; i < regexes.length; i++) {
-                            const regex = regexes[i];
-                            let childrens: TreeItemChild[] = [];
-                            for (let j = 0; j < cacheRanges.length; j++) {
-                                if (cacheRanges[j].length > 0) {
-                                    if (regex.decorationRange.start <= j && regex.decorationRange.end >= j) {
-                                        for (let l = 0; l < cacheRanges[j].length; l++) {
-                                            const range = cacheRanges[j][l];
-                                            let line = range.line;
-                                            let prefix = `${range.range.start.line + 1}:\t`;
-                                            childrens.push({
-                                                context: "selectToEditor",
-                                                range: range.range,
-                                                label: {
-                                                    label: `${prefix}${line.text.substring(line.firstNonWhitespaceCharacterIndex)}`,
-                                                    highlights: [
-                                                        [
-                                                            range.range.start.character - line.firstNonWhitespaceCharacterIndex + prefix.length,
-                                                            range.range.end.character - line.firstNonWhitespaceCharacterIndex + prefix.length
-                                                        ]
-                                                    ]
-                                                },
-                                                tooltip: `${line.text.substring(line.firstNonWhitespaceCharacterIndex)} [Ln ${range.range.start.line + 1}, Col ${range.range.start.character + 1}]`,
-                                                collapsibleState: vscode.TreeItemCollapsibleState.None
-                                            });
-                                        }
-                                    }
-                                }
-                            }
-                            if (childrens.length > 0) {
-                                childrens.sort((a, b) => {
-                                    if (a.range!.start.line > b.range!.start.line) return 1;
-                                    if (a.range!.start.line < b.range!.start.line) return -1;
-                                    if (a.range!.start.character > b.range!.start.character) return 1;
-                                    if (a.range!.start.character < b.range!.start.character) return -1;
-                                    return 0;
-                                });
-                                items.push({
-                                    label: `${regex.label}`,
-                                    iconPath: new vscode.ThemeIcon('regex'),
-                                    tooltip: `${regex.label}`,
-                                    collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-                                    resourceUri: vscode.Uri.parse(`highlight.regex.treeview.uri:${manager.active.tree.description}?${childrens.length}`, true),
-                                    childrens: childrens
-                                });
-                            }
-                        }
-                    }
-                }
-            }
+            items = buildRegexItems(activeEditor.document.uri.toString(true), {
+                detail: manager.active.detail,
+                badgeUri: `highlight.regex.treeview.uri:${manager.active.tree.description}`
+            });
         }
         catch (error) {
             log.error(`${error}`);

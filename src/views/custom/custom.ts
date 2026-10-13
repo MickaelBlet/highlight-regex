@@ -33,10 +33,13 @@ export default class Custom {
     uri: string | undefined;
     treeDataProvider: CustomTreeDataProvider;
     tree: vscode.TreeView<any>;
+    detail: boolean;
 
     constructor(index: number) {
         this.index = index;
         vscode.commands.executeCommand(`setContext`, `highlight.regex.custom${this.index}.active`, false);
+        this.detail = false;
+        vscode.commands.executeCommand(`setContext`, `highlight.regex.custom${this.index}.detail.active`, this.detail);
 
         this.propertyName = `${extensionId}.custom${index}`;
         this.uri = undefined;
@@ -88,6 +91,12 @@ export default class Custom {
         );
         // set active tree buttons
         vscode.commands.executeCommand(`setContext`, `highlight.regex.custom${this.index}.active`, true);
+    }
+
+    setDetail(detail: boolean): void {
+        this.detail = detail;
+        vscode.commands.executeCommand(`setContext`, `highlight.regex.custom${this.index}.detail.active`, this.detail);
+        this.treeDataProvider.updateUri(this.uri);
     }
 
     clear(): void {

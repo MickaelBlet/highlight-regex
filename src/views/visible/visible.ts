@@ -31,6 +31,7 @@ export default class Visible {
     treeDataProvider: VisibleTreeDataProvider;
     tree: vscode.TreeView<any>;
     mode: boolean;
+    detail: boolean;
 
     constructor(configuration: vscode.WorkspaceConfiguration) {
         this.treeDataProvider = new VisibleTreeDataProvider();
@@ -52,6 +53,9 @@ export default class Visible {
         }
 
         vscode.commands.executeCommand(`setContext`, `highlight.regex.visible.listView.active`, this.mode);
+
+        this.detail = false;
+        vscode.commands.executeCommand(`setContext`, `highlight.regex.visible.detail.active`, this.detail);
     }
 
     onDidChangeSelection(e: vscode.TreeViewSelectionChangeEvent<any>): void {
@@ -75,6 +79,12 @@ export default class Visible {
 
     refresh(): void {
         this.treeDataProvider.refresh();
+    }
+
+    setDetail(detail: boolean): void {
+        this.detail = detail;
+        vscode.commands.executeCommand(`setContext`, `highlight.regex.visible.detail.active`, this.detail);
+        this.update(vscode.window.visibleTextEditors);
     }
 
 }

@@ -26,7 +26,7 @@ import * as vscode from 'vscode';
 import { extensionId } from '../constants';
 import { log } from '../logger';
 import { manager } from '../manager';
-import { getNamedGroupIndexes } from './named-groups';
+import { getGroupSources, getNamedGroupIndexes } from './named-groups';
 
 interface Configuration {
     cacheLimit: number;
@@ -57,14 +57,17 @@ interface RegexListConfig {
     regexes?: RegexConfig[];
 }
 
-interface DecorationItem {
+export interface DecorationItem {
     index: number | string;
     hoverMessage?: string;
     decoration: number;
 }
 
-interface LoadedRegex {
+export interface LoadedRegex {
     index: number | string;
+    source: string;
+    groupSources: string[];
+    namedGroupIndexes: { [key: string]: number };
     regexRegExp: RegExp;
     regexCount: number;
     regexLimit: number;
@@ -72,7 +75,7 @@ interface LoadedRegex {
     decorations: DecorationItem[];
 }
 
-interface RegexEntry {
+export interface RegexEntry {
     label: string;
     decorationRange: {
         start: number;
@@ -85,7 +88,7 @@ interface RegexEntry {
     regexes: LoadedRegex[];
 }
 
-interface CacheRange {
+export interface CacheRange {
     range: vscode.Range;
     hoverMessage?: vscode.MarkdownString;
     line: vscode.TextLine;
@@ -197,6 +200,9 @@ class Parser {
             }
             return {
                 index: (regex.index !== undefined) ? regex.index : 0,
+                source: regexStr,
+                groupSources: getGroupSources(regexStr),
+                namedGroupIndexes: namedGroupIndexes,
                 regexRegExp: regexRegExp,
                 regexCount: 0,
                 regexLimit: (regex.regexLimit) ? regex.regexLimit : configuration.defaultRegexLimit,

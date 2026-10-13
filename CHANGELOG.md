@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+### New Features
+* Toggle button in the Visible, Active and Custom views to show matches by regex, capture group and child regex.
 ### Fix
 * Freeze of the extension host when a settings file is truncated (unterminated string, key or comment).
 * Wrong decoration position with an escaped `\|`, with a group inside a repeated group, or with an invalid backreference.
@@ -12,8 +14,6 @@
 * Capture group positions now use the native `d` regex flag (`indices`).
   A repeated capture group (e.g. `(\w\s)+`) now decorates only its last repetition, as in standard JavaScript.
   To decorate the whole sequence, wrap it: `((?:\w\s)+)`.
-
-## Version 3.0.0: May 10, 2026
 ### Documentation
 * Add "Highlight extra space end of line" example to `examples.md`.
 * Replace `.drawio.png` example screenshots with rendered `.png` images.

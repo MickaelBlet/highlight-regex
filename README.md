@@ -46,6 +46,8 @@ Navigate through regex matches in the active, visible or custom trees.
 ![tree visible search](images/treeVisibleSearch.gif)
 ![tree custom search](images/treeCustomSearch.gif)
 
+Use the zoom button in the view title to show the matches by regex, capture group and child regex (labels are the regex or the capture group source).
+
 ## Commands
 
 |Name|Command|Description|

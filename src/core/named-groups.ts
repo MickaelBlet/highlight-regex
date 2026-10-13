@@ -56,3 +56,44 @@ export function getNamedGroupIndexes(sRegex: string): { [key: string]: number } 
     }
     return namedGroupIndexes;
 }
+
+
+// source text of each capture group: '(a(b))(?<x>c)' -> ['(a(b))(?<x>c)', '(a(b))', '(b)', '(?<x>c)']
+export function getGroupSources(sRegex: string): string[] {
+    let groupSources: string[] = [sRegex];
+    // stack of [start position, group index] (group index 0 for non capture group)
+    let stack: [number, number][] = [];
+    let groupIndex = 0;
+    for (let i = 0; i < sRegex.length; i++) {
+        // jump escaped character
+        if ('\\' === sRegex[i]) {
+            i++;
+        }
+        // jump character class
+        else if ('[' === sRegex[i]) {
+            for (i++; i < sRegex.length && ']' !== sRegex[i]; i++) {
+                if ('\\' === sRegex[i]) {
+                    i++;
+                }
+            }
+        }
+        else if ('(' === sRegex[i]) {
+            // capture group or named capture group (not lookbehind)
+            if ('?' !== sRegex[i + 1] || ('<' === sRegex[i + 2] && '=' !== sRegex[i + 3] && '!' !== sRegex[i + 3])) {
+                groupIndex++;
+                groupSources[groupIndex] = '';
+                stack.push([i, groupIndex]);
+            }
+            else {
+                stack.push([i, 0]);
+            }
+        }
+        else if (')' === sRegex[i]) {
+            const group = stack.pop();
+            if (group !== undefined && group[1] > 0) {
+                groupSources[group[1]] = sRegex.substring(group[0], i + 1);
+            }
+        }
+    }
+    return groupSources;
+}

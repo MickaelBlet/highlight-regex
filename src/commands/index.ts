@@ -30,6 +30,7 @@ import { registerGlobalHeaderCommands } from './global-header';
 import { registerWorkspaceHeaderCommands } from './workspace-header';
 import { registerVisibleCommands } from './visible';
 import { registerCustomCommands } from './custom';
+import { registerDetailCommands } from './detail';
 import { registerGlobalItemCommands } from './global-item';
 import { registerWorkspaceItemCommands } from './workspace-item';
 
@@ -42,6 +43,7 @@ export function registerAllCommands(): void {
     registerWorkspaceHeaderCommands();
     registerVisibleCommands();
     registerCustomCommands();
+    registerDetailCommands();
     registerGlobalItemCommands();
     registerWorkspaceItemCommands();
 }

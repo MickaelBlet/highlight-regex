@@ -97,6 +97,30 @@
 					"when": "view == highlight.regex.view.visible && !highlight.regex.visible.listView.active",
 					"group": "navigation@1"
 				},
+{% for view in ['visible', 'active'] %}
+				{
+					"command": "highlight.regex.{{view}}.showDetail",
+					"when": "view == highlight.regex.view.{{view}} && !highlight.regex.{{view}}.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.{{view}}.hideDetail",
+					"when": "view == highlight.regex.view.{{view}} && highlight.regex.{{view}}.detail.active",
+					"group": "navigation@0"
+				},
+{% endfor %}
+{% for i in range(1, 11) %}
+				{
+					"command": "highlight.regex.custom{{i}}.showDetail",
+					"when": "view == highlight.regex.view.custom{{i}} && highlight.regex.custom{{i}}.active && !highlight.regex.custom{{i}}.detail.active",
+					"group": "navigation@0"
+				},
+				{
+					"command": "highlight.regex.custom{{i}}.hideDetail",
+					"when": "view == highlight.regex.view.custom{{i}} && highlight.regex.custom{{i}}.active && highlight.regex.custom{{i}}.detail.active",
+					"group": "navigation@0"
+				},
+{% endfor %}
 {% for i in range(1, 11) %}
 				{
 					"command": "highlight.regex.custom{{i}}.reference",
@@ -240,6 +264,34 @@
 				"title": "View as List",
 				"icon": "$(list-tree)"
 			},
+{% for view in ['visible', 'active'] %}
+			{
+				"command": "highlight.regex.{{view}}.showDetail",
+				"enablement": "view == highlight.regex.view.{{view}}",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.{{view}}.hideDetail",
+				"enablement": "view == highlight.regex.view.{{view}}",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+{% endfor %}
+{% for i in range(1, 11) %}
+			{
+				"command": "highlight.regex.custom{{i}}.showDetail",
+				"enablement": "view == highlight.regex.view.custom{{i}}",
+				"title": "Show regex details",
+				"icon": "$(zoom-in)"
+			},
+			{
+				"command": "highlight.regex.custom{{i}}.hideDetail",
+				"enablement": "view == highlight.regex.view.custom{{i}}",
+				"title": "Hide regex details",
+				"icon": "$(zoom-out)"
+			},
+{% endfor %}
 {% for i in range(1, 11) %}
 			{
 				"command": "highlight.regex.custom{{i}}.reference",
