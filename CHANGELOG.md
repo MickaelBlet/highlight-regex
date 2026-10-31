@@ -1,5 +1,10 @@
 # Change Log
 
+## [Unreleased]
+### Build
+* Generate `package.json` from a Liquid template (`scripts/package.liquid.json`) with `scripts/generate.js` (LiquidJS fetched on demand via `npx`) instead of Jinja/Python.
+* Replace `scripts/build.sh` with `npm run generate`, `npm run deliver` and `npm run deliver:install`; the version is taken from the current `package.json`.
+
 ## Version 3.0.0: October 14, 2026
 ### New Features
 * Toggle button in the Visible, Active and Custom views to show matches by regex, capture group and child regex.

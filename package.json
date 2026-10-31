@@ -29,7 +29,10 @@
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile"
+		"pretest": "npm run compile",
+		"generate": "npm install --no-package-lock && node scripts/generate.js",
+		"deliver": "npm run generate && vsce package --githubBranch master",
+		"deliver:install": "npm run deliver && code --install-extension highlight-regex-$npm_package_version.vsix"
 	},
 	"devDependencies": {
 		"@types/node": "^20.x",

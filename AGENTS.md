@@ -8,14 +8,14 @@ VS Code extension "Highlight - Regex" (`highlight.regex`): decorates text matche
 
 - `npm run compile` — `tsc -p ./` → `out/` (entry `out/extension.js`)
 - `npm run watch` — incremental compile
-- `./scripts/build.sh X.Y.Z` — regenerate `package.json` + `vsce package` (`INSTALL_VSIX=1` to also install)
+- `npm run deliver` — regenerate `package.json` + `vsce package`, keeping its current `version` (`deliver:install` to also install; `generate` to only regenerate). Bump with `npm version X.Y.Z --no-git-tag-version` first.
 - No test suite and no linter are configured; verify by compiling and running the extension (F5 / Extension Development Host).
 
 ## package.json is generated
 
-`package.json` (~500 KB) is rendered from `scripts/package.jinja.json` by `scripts/generate.py VERSION NB_RECURSE` (needs `jinja2`). Edit the template, never `package.json` directly, then regenerate.
-- The JSON schema for nested `regexes` is unrolled `NB_RECURSE` times (5 in `build.sh`).
-- Custom views 1–10 and the visible/active view menus are generated with Jinja loops.
+`package.json` (~500 KB) is rendered from `scripts/package.liquid.json` by `scripts/generate.js` (LiquidJS, fetched on demand via `npx`). Edit the template, never `package.json` directly, then regenerate.
+- The JSON schema for nested `regexes` is unrolled `NB_RECURSE` times (`NB_RECURSE = 5` in `generate.js`).
+- Custom views 1–10 and the visible/active view menus are generated with Liquid loops.
 
 ## Architecture
 
@@ -28,7 +28,7 @@ VS Code extension "Highlight - Regex" (`highlight.regex`): decorates text matche
 - `src/settings/` — `Setting` resolves user/remote/workspace `settings.json` URIs and edits them (focus a key, insert snippets); `jsonc-parser.ts` is a hand-written JSONC parser that records each key path's text position. Remote: settings may live in `Machine/settings.json` or `User/settings.json`.
 - `src/treeview/` — settings tree for global/workspace views (`tree-item.ts`) and the shared occurrence tree builder (`occurrence-tree.ts`) used by match views.
 - `src/views/` — `visible`, `active`, `custom` (10 instances, URI stored in `highlight.regex.customN.uri`) match-navigation views, each with a tree provider and a file-decoration provider; `quickpick` is "Choose by name(s)". `setDetail()` toggles grouping by regex/capture group/child regex.
-- `src/commands/` — one `register*Commands()` per area, all called from `commands/index.ts`. New commands must also be declared in `scripts/package.jinja.json`.
+- `src/commands/` — one `register*Commands()` per area, all called from `commands/index.ts`. New commands must also be declared in `scripts/package.liquid.json`.
 
 ## Conventions
 

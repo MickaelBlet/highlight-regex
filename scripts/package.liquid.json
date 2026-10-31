@@ -29,7 +29,10 @@
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile"
+		"pretest": "npm run compile",
+		"generate": "npm install --no-package-lock && node scripts/generate.js",
+		"deliver": "npm run generate && vsce package --githubBranch master",
+		"deliver:install": "npm run deliver && code --install-extension highlight-regex-$npm_package_version.vsix"
 	},
 	"devDependencies": {
 		"@types/node": "^20.x",
@@ -68,7 +71,7 @@
 					"name": "Active",
 					"icon": "images/icon.svg"
 				},
-{% for i in range(1, 11) %}
+{% for i in (1..10) %}
 				{
 					"id": "highlight.regex.view.custom{{i}}",
 					"name": "Custom {{i}}",
@@ -79,9 +82,9 @@
 					"visibility": "hidden"
 {% endif %}
 				}
-{% if i < 10 %}
+{% unless forloop.last %}
 ,
-{% endif %}
+{% endunless %}
 {% endfor %}
 			]
 		},
@@ -97,7 +100,7 @@
 					"when": "view == highlight.regex.view.visible && !highlight.regex.visible.listView.active",
 					"group": "navigation@1"
 				},
-{% for view in ['visible', 'active'] %}
+{% for view in views %}
 				{
 					"command": "highlight.regex.{{view}}.showDetail",
 					"when": "view == highlight.regex.view.{{view}} && !highlight.regex.{{view}}.detail.active",
@@ -109,7 +112,7 @@
 					"group": "navigation@0"
 				},
 {% endfor %}
-{% for i in range(1, 11) %}
+{% for i in (1..10) %}
 				{
 					"command": "highlight.regex.custom{{i}}.showDetail",
 					"when": "view == highlight.regex.view.custom{{i}} && highlight.regex.custom{{i}}.active && !highlight.regex.custom{{i}}.detail.active",
@@ -121,28 +124,28 @@
 					"group": "navigation@0"
 				},
 {% endfor %}
-{% for i in range(1, 11) %}
+{% for i in (1..10) %}
 				{
 					"command": "highlight.regex.custom{{i}}.reference",
 					"when": "view == highlight.regex.view.custom{{i}} && highlight.regex.custom{{i}}.active",
 					"group": "navigation@1"
 				},
 {% endfor %}
-{% for i in range(1, 11) %}
+{% for i in (1..10) %}
 				{
 					"command": "highlight.regex.custom{{i}}.choose",
 					"when": "view == highlight.regex.view.custom{{i}} && !highlight.regex.custom{{i}}.active",
 					"group": "navigation@2"
 				},
 {% endfor %}
-{% for i in range(1, 11) %}
+{% for i in (1..10) %}
 				{
 					"command": "highlight.regex.custom{{i}}.clear",
 					"when": "view == highlight.regex.view.custom{{i}} && highlight.regex.custom{{i}}.active",
 					"group": "navigation@2"
 				},
 {% endfor %}
-{% for scope in ['global', 'workspace'] %}
+{% for scope in scopes %}
 				{
 					"command": "highlight.regex.{{scope}}.toggleCheckAll",
 					"when": "view == highlight.regex.view.{{scope}}",
@@ -169,7 +172,7 @@
 {% endfor %}
 			],
 			"view/item/context": [
-{% for scope in ['global', 'workspace'] %}
+{% for scope in scopes %}
 				{
 					"command": "highlight.regex.{{scope}}.editEntry",
 					"when": "view == highlight.regex.view.{{scope}}",
@@ -264,7 +267,7 @@
 				"title": "View as List",
 				"icon": "$(list-tree)"
 			},
-{% for view in ['visible', 'active'] %}
+{% for view in views %}
 			{
 				"command": "highlight.regex.{{view}}.showDetail",
 				"enablement": "view == highlight.regex.view.{{view}}",
@@ -278,7 +281,7 @@
 				"icon": "$(zoom-out)"
 			},
 {% endfor %}
-{% for i in range(1, 11) %}
+{% for i in (1..10) %}
 			{
 				"command": "highlight.regex.custom{{i}}.showDetail",
 				"enablement": "view == highlight.regex.view.custom{{i}}",
@@ -292,7 +295,7 @@
 				"icon": "$(zoom-out)"
 			},
 {% endfor %}
-{% for i in range(1, 11) %}
+{% for i in (1..10) %}
 			{
 				"command": "highlight.regex.custom{{i}}.reference",
 				"enablement": "view == highlight.regex.view.custom{{i}}",
@@ -300,7 +303,7 @@
 				"icon": "$(references)"
 			},
 {% endfor %}
-{% for i in range(1, 11) %}
+{% for i in (1..10) %}
 			{
 				"command": "highlight.regex.custom{{i}}.choose",
 				"enablement": "view == highlight.regex.view.custom{{i}}",
@@ -308,7 +311,7 @@
 				"icon": "$(target)"
 			},
 {% endfor %}
-{% for i in range(1, 11) %}
+{% for i in (1..10) %}
 			{
 				"command": "highlight.regex.custom{{i}}.clear",
 				"enablement": "view == highlight.regex.view.custom{{i}}",
@@ -316,7 +319,7 @@
 				"icon": "$(trash)"
 			},
 {% endfor %}
-{% for scope in ['global', 'workspace'] %}
+{% for scope in scopes %}
 			{
 				"command": "highlight.regex.{{scope}}.toggleCheckAll",
 				"title": "Toggle check all",
@@ -450,17 +453,17 @@
 					"description": "Activate tree view mode on visible treeview",
 					"default": "tree"
 				},
-{% for i in range(1, 11) %}
+{% for i in (1..10) %}
 				"highlight.regex.custom{{i}}.uri": {
 					"scope": "resource",
 					"type": "string",
 					"description": "Custom uri"
 				},
 {% endfor %}
-{% for scope in ['global', 'workspace'] %}
+{% for scope in scopes %}
 {% if scope == 'global' %}
 "highlight.regex.regexes": {
-{% elif scope == 'workspace' %}
+{% elsif scope == 'workspace' %}
 "highlight.regex.workspace.regexes": {
 {% endif %}
 {% if scope == 'global' %}
@@ -588,7 +591,7 @@
 				"description": "Regex for activated decorations if match with filename",
 				"default": ".*"
 			},
-{% for i in range(0, nb_recurse) %}
+{% for i in (0..nb_recurse_last) %}
 			"regexes": {
 				"type": "array",
 				"title": "regexes",
@@ -1444,9 +1447,9 @@
 									}
 								}
 							}
-						}{%- if i < nb_recurse - 1 -%},{%- endif -%}
+						}{% unless forloop.last %},{% endunless %}
 {% endfor %}
-{% for i in range(0, nb_recurse) %}
+{% for i in (0..nb_recurse_last) %}
 } } }
 {% endfor %}
 		}
